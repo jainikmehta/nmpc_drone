@@ -3,8 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle # Import Circle patch
 import time # To time the solver
-from utils import reference_generator, obstacles
+from utils import main_node, reference_generator_2d # obstacles
 from dynamics import dynamics_unicycle
+
+# Map parameters
+xlimit = 2
+neg_x_limit = -1
+ylimit = 2
+neg_ylimit = -1
 
 # Parameters Robot 0
 N = 200  # Prediction horizon (MAKE SURE N IS LARGE ENOUGH FOR REFERENCE)
@@ -19,10 +25,8 @@ x_goal = np.array([1.0, 1.0, 0.0]) # Goal state [x_g0, y_g0, theta_g0]
 # Define initial state Robot 0
 x_current = np.array([0.0, 0.0, 0.0])  # [x0, y0, theta0]
 
-# Trajectory for Robot 0
-wp1 = np.array([1.2, 0.0, 0.0])      # Waypoint 1 (end of first segment)
-wp2 = np.array([1.2, 1.0, np.pi/2])  # Waypoint 2 (end of second segment)
-waypoints_robot0 = np.array([wp1, wp2])
+# Obstacles centers
+
 
 # Reference trajectory Robot 0
 reference_generator_0 = reference_generator(nx, initial_pos = x_current, final_pos = x_goal, waypoints = waypoints_robot0)

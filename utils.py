@@ -1,26 +1,27 @@
 import numpy as np
+import casadi as cas
 
-class obstacles_2d:
+# class obstacles_2d:
     
-    obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
+#     obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
 
-    # # Refilter based on start/goal
-    # min_start_goal_dist = 0.15 # Allow slightly closer obstacles
-    # valid_centers = []
-    # for center in obstacle_centers:
-    #      if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
-    #         np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
-    #          valid_centers.append(center)
-    # obstacle_centers = np.array(valid_centers)
-    # num_obstacles = obstacle_centers.shape[0]
+#     # # Refilter based on start/goal
+#     # min_start_goal_dist = 0.15 # Allow slightly closer obstacles
+#     # valid_centers = []
+#     # for center in obstacle_centers:
+#     #      if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
+#     #         np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
+#     #          valid_centers.append(center)
+#     # obstacle_centers = np.array(valid_centers)
+#     # num_obstacles = obstacle_centers.shape[0]
 
-    # print(f"Using {num_obstacles} obstacles.")
+#     # print(f"Using {num_obstacles} obstacles.")
 
-    # Pre-calculate minimum squared distances from centers
-    min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)
+#     # Pre-calculate minimum squared distances from centers
+#     min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)
 
 
-class reference_generator_2d:
+class reference_generator_2d: # this should just take initial, final position and map and using RRT or A* generate trajectory
 
     def __init__(self, nx, initial_pos, final_pos, waypoints):
         self.nx = nx    # State dimension
@@ -29,10 +30,10 @@ class reference_generator_2d:
         self.final_pos = final_pos # Final position of robot [x0, y0, theta0]
 
     def generate_trajectory():
-        wp0 = np.array([0.0, 0.0, 0.0])      # Start
-        wp1 = np.array([1.2, 0.0, 0.0])      # Waypoint 1 (end of first segment)
-        wp2 = np.array([1.2, 1.0, np.pi/2])  # Waypoint 2 (end of second segment)
-        wp3 = np.array([1.0, 1.0, np.pi])      # Waypoint 3 (final goal)
+        # wp0 = np.array([0.0, 0.0, 0.0])      # Start
+        # wp1 = np.array([1.2, 0.0, 0.0])      # Waypoint 1 (end of first segment)
+        # wp2 = np.array([1.2, 1.0, np.pi/2])  # Waypoint 2 (end of second segment)
+        # wp3 = np.array([1.0, 1.0, np.pi])      # Waypoint 3 (final goal)
 
         # Allocate steps (total N=100, total time = 10s)
         # Segment lengths: 0.7m, 1.0m, 0.3m -> Total 2.0m
@@ -42,18 +43,18 @@ class reference_generator_2d:
         # = 0.7/1 + (pi/2)/(pi/4) + 1.0/1 + (pi/2)/(pi/4) + 0.3/1
         # = 0.7 + 2.0 + 1.0 + 2.0 + 0.3 = 6.0 seconds (60 steps) - Feasible within N=100
 
-        N1 = 25  # Steps for segment 1 + start turn 2
-        N2 = 45  # Steps for segment 2 + start turn 3
-        N3 = 30  # Steps for segment 3 + approach goal
+        # N1 = 25  # Steps for segment 1 + start turn 2
+        # N2 = 45  # Steps for segment 2 + start turn 3
+        # N3 = 30  # Steps for segment 3 + approach goal
 
-        if N1 + N2 + N3 > N:
-            print(f"Warning: N1+N2+N3 = {N1+N2+N3} > N = {N}. Adjust steps or N.")
-            # Simple fix: scale down (might make segments too short)
-            scale = N / (N1 + N2 + N3)
-            N1 = int(N1 * scale)
-            N2 = int(N2 * scale)
-            N3 = N - N1 - N2 # Ensure total is N 
-            print(f"Adjusted steps: N1={N1}, N2={N2}, N3={N3}")
+        # if N1 + N2 + N3 > N:
+        #     print(f"Warning: N1+N2+N3 = {N1+N2+N3} > N = {N}. Adjust steps or N.")
+        #     # Simple fix: scale down (might make segments too short)
+        #     scale = N / (N1 + N2 + N3)
+        #     N1 = int(N1 * scale)
+        #     N2 = int(N2 * scale)
+        #     N3 = N - N1 - N2 # Ensure total is N 
+        #     print(f"Adjusted steps: N1={N1}, N2={N2}, N3={N3}")
 
 
         X_ref_traj = np.zeros((nx, N))
@@ -85,43 +86,43 @@ class reference_generator_2d:
             X_ref_traj[:, k_end_3:] = wp3.reshape(nx, 1)
 
 
-class constraint:
+# class constraint:
 
-    # --- Define constraints ---
-    g = [] # Constraint vector
-    lbg = [] # Lower bounds for constraints
-    ubg = [] # Upper bounds for constraints
+#     # --- Define constraints ---
+#     g = [] # Constraint vector
+#     lbg = [] # Lower bounds for constraints
+#     ubg = [] # Upper bounds for constraints
 
-    # 1. Dynamics Constraints (x_{k+1} = f(x_k, u_k)) - Uses symbolic x0 from p
-    for k in range(N):
-        x_curr_step = X[:, k-1] if k > 0 else x0 # State at start of interval k
-        u_curr_step = U[:, k]                   # Control during interval k
-        x_next_pred = dynamics(x_curr_step, u_curr_step) # Predicted state at end of interval
-        g.append(X[:, k] - x_next_pred) # Constraint: x_{k+1} - f(x_k, u_k) = 0
-        lbg.extend([0.0] * nx) # Equality constraint: lower bound = 0
-        ubg.extend([0.0] * nx) # Equality constraint: upper bound = 0
+#     # 1. Dynamics Constraints (x_{k+1} = f(x_k, u_k)) - Uses symbolic x0 from p
+#     for k in range(N):
+#         x_curr_step = X[:, k-1] if k > 0 else x0 # State at start of interval k
+#         u_curr_step = U[:, k]                   # Control during interval k
+#         x_next_pred = dynamics(x_curr_step, u_curr_step) # Predicted state at end of interval
+#         g.append(X[:, k] - x_next_pred) # Constraint: x_{k+1} - f(x_k, u_k) = 0
+#         lbg.extend([0.0] * nx) # Equality constraint: lower bound = 0
+#         ubg.extend([0.0] * nx) # Equality constraint: upper bound = 0
 
-    # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
-    for k in range(N): # For each time step in the prediction horizon
-        pos_k = X[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
-        for obs_idx in range(num_obstacles): # For each obstacle
-            obs_center = obstacle_centers[obs_idx, :]
-            min_dist_sq = min_dist_sq_array[obs_idx]
-            dist_sq = cas.sumsqr(pos_k - obs_center) # Squared distance from obstacle center
-            h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
-            g.append(h_k_obs)
-            lbg.append(0.1)
-            ubg.append(large_number)
+#     # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
+#     for k in range(N): # For each time step in the prediction horizon
+#         pos_k = X[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
+#         for obs_idx in range(num_obstacles): # For each obstacle
+#             obs_center = obstacle_centers[obs_idx, :]
+#             min_dist_sq = min_dist_sq_array[obs_idx]
+#             dist_sq = cas.sumsqr(pos_k - obs_center) # Squared distance from obstacle center
+#             h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
+#             g.append(h_k_obs)
+#             lbg.append(0.1)
+#             ubg.append(large_number)
 
-    # --- Combine constraints and bounds ---
-    # REMOVE the explicit final state constraint if using terminal cost
-    g.append(X[:, N-1] - x_goal) # Goal constraint X_N = x_goal
-    lbg.extend([-1e-3] * nx) # Allow small tolerance
-    ubg.extend([1e-3] * nx)
+#     # --- Combine constraints and bounds ---
+#     # REMOVE the explicit final state constraint if using terminal cost
+#     g.append(X[:, N-1] - x_goal) # Goal constraint X_N = x_goal
+#     lbg.extend([-1e-3] * nx) # Allow small tolerance
+#     ubg.extend([1e-3] * nx)
 
-    g = cas.vertcat(*g) # Stack constraints into a single vector
-    lbg = np.array(lbg)
-    ubg = np.array(ubg)
+#     g = cas.vertcat(*g) # Stack constraints into a single vector
+#     lbg = np.array(lbg)
+#     ubg = np.array(ubg)
 
 
 class main_node:
@@ -134,6 +135,23 @@ class main_node:
         self.x_initial = x_initial  # Initial location
         self.x_goal = x_goal        # Goal location
         self.X_ref_traj = X_ref_traj     # Reference trajectory
+
+        # --- IMPORTANT: Parameters ---
+        # Parameter vector 'p' now contains initial state AND reference trajectory
+        self.p = cas.SX.sym('p', self.nx, self.N+1)  # [x0; vec(X_ref)]
+
+        # Decision variables: control U and predicted states X flattened
+        self.Z = cas.SX.sym('Z', self.nu * self.N + self.nx * self.N)  # [vec(U); vec(X)]
+
+        # Create the parameter vector value including the reference trajectory
+        self.p_value = np.insert(self.X_ref_traj, 0, self.x_initial, axis=1)
+
+        # --- Extract variables from Z and p ---
+        self.x0 = self.p[0:nx, 0]                        # Symbolic initial state
+        self.X_ref = self.p[:, 1:]                       # Symbolic reference trajectory (vectorized)
+
+        self.U = cas.reshape(Z[0:nu * N], nu, N)         # Symbolic Controls u0 to u_{N-1}
+        self.X = cas.reshape(Z[nu * N:], nx, N)          # Symbolic States x1 to xN
 
 
     def cost_objective(self):
@@ -172,25 +190,7 @@ class main_node:
             #                 Q_terminal[1,1]*terminal_state_error[1]**2
             #                 # Q_terminal[2,2]*terminal_theta_error_wrapped**2
             # cost += 100*terminal_cost
-    # --- IMPORTANT: Parameters ---
-    # Parameter vector 'p' now contains initial state AND reference trajectory
-    self.p = cas.SX.sym('p', self.nx, self.N+1)  # [x0; vec(X_ref)]
-
-    # Decision variables: control U and predicted states X flattened
-    self.Z = cas.SX.sym('Z', self.nu * self.N + self.nx * self.N)  # [vec(U); vec(X)]
-
-    # Create the parameter vector value including the reference trajectory
-    self.p_value = np.insert(self.X_ref_traj, 0, self.x_initial, axis=1)
-
-    # --- Extract variables from Z and p ---
-    x0 = self.p[0:nx, 0]                        # Symbolic initial state
-    X_ref = self.p[:, 1:]                       # Symbolic reference trajectory (vectorized)
-
-    self.U = cas.reshape(Z[0:nu * N], nu, N)         # Symbolic Controls u0 to u_{N-1}
-    self.X = cas.reshape(Z[nu * N:], nx, N)          # Symbolic States x1 to xN
-
-
-
+            
     def solver(self):
         # --- Define the nonlinear programming problem (NLP) ---
         nlp = {
