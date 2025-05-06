@@ -1,89 +1,58 @@
 import numpy as np
 import casadi as cas
 
-# class obstacles_2d:
+class obstacles_2d:
+
+    def create_obstacles_in_map():
     
-#     obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
+        obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
 
-#     # # Refilter based on start/goal
-#     # min_start_goal_dist = 0.15 # Allow slightly closer obstacles
-#     # valid_centers = []
-#     # for center in obstacle_centers:
-#     #      if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
-#     #         np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
-#     #          valid_centers.append(center)
-#     # obstacle_centers = np.array(valid_centers)
-#     # num_obstacles = obstacle_centers.shape[0]
+        # Refilter based on start/goal
+        min_start_goal_dist = 0.15 # Allow slightly closer obstacles
+        valid_centers = []
+        for center in obstacle_centers:
+             if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
+                np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
+                 valid_centers.append(center)
+        obstacle_centers = np.array(valid_centers)
+        num_obstacles = obstacle_centers.shape[0]
 
-#     # print(f"Using {num_obstacles} obstacles.")
+        print(f"Using {num_obstacles} obstacles.")
 
-#     # Pre-calculate minimum squared distances from centers
-#     min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)
-
-
-class reference_generator_2d: # this should just take initial, final position and map and using RRT or A* generate trajectory
-
-    def __init__(self, nx, initial_pos, final_pos, waypoints):
-        self.nx = nx    # State dimension
-        self.waypoints = waypoints  # Waypoint array [(x1,y1), (x2,y2), ...]
-        self.initial_pos = initial_pos  # Initial position of robot [x0, y0, theta0]
-        self.final_pos = final_pos # Final position of robot [x0, y0, theta0]
-
-    def generate_trajectory():
-        # wp0 = np.array([0.0, 0.0, 0.0])      # Start
-        # wp1 = np.array([1.2, 0.0, 0.0])      # Waypoint 1 (end of first segment)
-        # wp2 = np.array([1.2, 1.0, np.pi/2])  # Waypoint 2 (end of second segment)
-        # wp3 = np.array([1.0, 1.0, np.pi])      # Waypoint 3 (final goal)
-
-        # Allocate steps (total N=100, total time = 10s)
-        # Segment lengths: 0.7m, 1.0m, 0.3m -> Total 2.0m
-        # Turn angles: pi/2, pi/2 -> Total pi rad
-        # Min time estimate @ max speed/turn rate:
-        # 0.7/v_max + (pi/2)/ω_max + 1.0/v_max + (pi/2)/ω_max + 0.3/v_max
-        # = 0.7/1 + (pi/2)/(pi/4) + 1.0/1 + (pi/2)/(pi/4) + 0.3/1
-        # = 0.7 + 2.0 + 1.0 + 2.0 + 0.3 = 6.0 seconds (60 steps) - Feasible within N=100
-
-        # N1 = 25  # Steps for segment 1 + start turn 2
-        # N2 = 45  # Steps for segment 2 + start turn 3
-        # N3 = 30  # Steps for segment 3 + approach goal
-
-        # if N1 + N2 + N3 > N:
-        #     print(f"Warning: N1+N2+N3 = {N1+N2+N3} > N = {N}. Adjust steps or N.")
-        #     # Simple fix: scale down (might make segments too short)
-        #     scale = N / (N1 + N2 + N3)
-        #     N1 = int(N1 * scale)
-        #     N2 = int(N2 * scale)
-        #     N3 = N - N1 - N2 # Ensure total is N 
-        #     print(f"Adjusted steps: N1={N1}, N2={N2}, N3={N3}")
+        # Pre-calculate minimum squared distances from centers
+        min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)
 
 
-        X_ref_traj = np.zeros((nx, N))
+class ref_generator_2d: 
 
-        # Segment 1: (0,0) -> (0.7,0), aiming for theta=0
-        t1 = np.linspace(0, 1, N1)
-        X_ref_traj[0, :N1] = wp0[0] + (wp1[0] - wp0[0]) * t1
-        X_ref_traj[1, :N1] = wp0[1] # y=0
-        X_ref_traj[2, :N1] = wp1[2] # Target theta=0 for this segment
+    def __init__(self, start, goal, max_velocity):
+        self.start = start  # Initial position of robot [x_0, y_0, theta_0]
+        self.goal = goal # Final position of robot [x_g, y_g, theta_g]
+        self.max_velocity = max_velocity
 
-        # Segment 2: (0.7,0) -> (0.7,1), aiming for theta=pi/2
-        t2 = np.linspace(0, 1, N2)
-        k_start_2 = N1
-        k_end_2 = N1 + N2
-        X_ref_traj[0, k_start_2:k_end_2] = wp1[0] # x=0.7
-        X_ref_traj[1, k_start_2:k_end_2] = wp1[1] + (wp2[1] - wp1[1]) * t2
-        X_ref_traj[2, k_start_2:k_end_2] = wp2[2] # Target theta=pi/2 for this segment
+    def generate_waypoints(self):
+        waypoints = []
+        current_pose = self.start[:2]
+        goal_pose = self.goal[:2]
+        max_vel = self.max_velocity
 
-        # Segment 3: (0.7,1) -> (1.0,1), aiming for theta=0
-        t3 = np.linspace(0, 1, N3)
-        k_start_3 = N1 + N2
-        k_end_3 = N1 + N2 + N3 # Should be <= N
-        X_ref_traj[0, k_start_3:k_end_3] = wp2[0] + (wp3[0] - wp2[0]) * t3
-        X_ref_traj[1, k_start_3:k_end_3] = wp2[1] # y=1.0
-        X_ref_traj[2, k_start_3:k_end_3] = wp3[2] # Target theta=0 for this segment
+        direction = goal_pose - current_pose
+        distance_to_goal = np.linalg.norm(direction)
+        if distance_to_goal <= max_vel:
+            return np.array(waypoints) # No waypoint can be created
 
-        # Fill remaining steps with goal state if N > N1+N2+N3 (shouldn't happen with adjustment)
-        if k_end_3 < N:
-            X_ref_traj[:, k_end_3:] = wp3.reshape(nx, 1)
+        distance_to_goal_units = np.floor(distance_to_goal/max_vel)
+        if distance_to_goal_units % 2 == 0:
+            num_waypoints = int(distance_to_goal_units - 1)
+        else:
+            num_waypoints = int(distance_to_goal_units)
+
+        step = max_vel * direction / distance_to_goal
+        for i in range(num_waypoints):
+            current_pose += step
+            waypoints.append(current_pose.copy())
+
+        return np.array(waypoints)# [[x_1, y_1][x_2, y_2],...,[x_g-1, y_g-1]]
 
 
 # class constraint:
@@ -128,23 +97,24 @@ class reference_generator_2d: # this should just take initial, final position an
 class main_node:
 
 
-    def __init__(self, nx, nu, N, x_initial, x_goal, X_ref_traj):
-        self.nx = nx                # Number of states
-        self.nu = nu                # Control inputs
-        self.N = N                  # Prediction horizon
-        self.x_initial = x_initial  # Initial location
-        self.x_goal = x_goal        # Goal location
-        self.X_ref_traj = X_ref_traj     # Reference trajectory
+    def __init__(self, num_states, num_control, pred_horizn, ctrl_horizn, start, goal, ref_waypoints):
+        self.num_states = num_states              # Number of states
+        self.num_ctrl = num_ctrl            # Control inputs
+        self.pred_horizn = pred_horizn                # Prediction horizon
+        self.ctrl_horizn = ctrl_horizn                # Control horizon
+        self.start = start      # Initial location
+        self.goal = goal            # Goal location
+        self.ref_waypoints = ref_waypoints     # Reference waypoints
 
         # --- IMPORTANT: Parameters ---
-        # Parameter vector 'p' now contains initial state AND reference trajectory
-        self.p = cas.SX.sym('p', self.nx, self.N+1)  # [x0; vec(X_ref)]
+        # Parameter vector 'p' now contains initial state AND reference waypoints
+        self.param = cas.SX.sym('p', self.num_state, self.pred_horizn)  # [number of states; current_position + prediction horizon]
 
         # Decision variables: control U and predicted states X flattened
-        self.Z = cas.SX.sym('Z', self.nu * self.N + self.nx * self.N)  # [vec(U); vec(X)]
+        self.Z = cas.SX.sym('Z', self.nu * self.Np + self.nx * self.N)  # [vec(U); vec(X)]
 
         # Create the parameter vector value including the reference trajectory
-        self.p_value = np.insert(self.X_ref_traj, 0, self.x_initial, axis=1)
+        self.param_value = np.insert(self.X_ref_traj, 0, self.x_initial, axis=1)
 
         # --- Extract variables from Z and p ---
         self.x0 = self.p[0:nx, 0]                        # Symbolic initial state
