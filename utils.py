@@ -99,10 +99,10 @@ class main_node:
 
     def __init__(self, num_states, num_control, pred_horizn, ctrl_horizn, start, goal, ref_waypoints):
         self.num_states = num_states              # Number of states
-        self.num_ctrl = num_ctrl            # Control inputs
+        self.num_ctrl = num_ctrl                  # Control inputs
         self.pred_horizn = pred_horizn                # Prediction horizon
         self.ctrl_horizn = ctrl_horizn                # Control horizon
-        self.start = start      # Initial location
+        self.start = start          # Initial location
         self.goal = goal            # Goal location
         self.ref_waypoints = ref_waypoints     # Reference waypoints
 
