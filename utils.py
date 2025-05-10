@@ -4,43 +4,6 @@ from dynamics import unicycle_dynamics
 import time
 
 
-# class obstacles_2d:
-
-
-#     def create_obstacles_in_map():
-    
-
-#         obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
-
-
-#         # Refilter based on start/goal
-
-#         min_start_goal_dist = 0.15 # Allow slightly closer obstacles
-
-#         valid_centers = []
-
-#         for center in obstacle_centers:
-
-#              if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
-
-#                 np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
-
-#                  valid_centers.append(center)
-
-#         obstacle_centers = np.array(valid_centers)
-
-#         num_obstacles = obstacle_centers.shape[0]
-
-
-#         print(f"Using {num_obstacles} obstacles.")
-
-
-#         # Pre-calculate minimum squared distances from centers
-
-#         min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)
-
-
-
 class ref_generator_2d:
     
     
@@ -83,7 +46,10 @@ class ref_generator_2d:
 class nmpc_node:
 
 
-    def __init__(self, num_states, num_controls, pred_horizn, ctrl_horizn, start, max_velocity, max_angular_velocity, sampling_time):
+    def __init__(self, num_states, num_controls, 
+                 pred_horizn, ctrl_horizn, start,
+                 max_velocity, max_angular_velocity, 
+                 sampling_time, Q_running, R_running, Q_terminal):
 
         self.num_states = num_states              # Number of states
         self.num_ctrls = num_controls                  # Control inputs
@@ -96,9 +62,9 @@ class nmpc_node:
         self.dt = sampling_time
 
         # Constants defined
-        self.Q_running = cas.diag([5.0, 5.0, 0.5])       # Weights for tracking reference state [x, y, θ]
-        self.R_running = cas.diag([0.5, 0.5])            # Weights for control effort [v, ω] - Keep this!
-        self.Q_terminal = cas.diag([50.0, 50.0, 50.0])   # Weights for final state deviation from goal
+        self.Q_running = Q_running      # Weights for tracking reference state [x, y, θ]
+        self.R_running = R_running      # Weights for control effort [v, ω] - Keep this!
+        self.Q_terminal = Q_terminal    # Weights for final state deviation from goal
 
 
     def cost_objective(self):
@@ -113,11 +79,17 @@ class nmpc_node:
             self.horizn_cost += control.T @ self.R_running @ control
 
         # State error cost
-        for k in range(self.pred_horizn-1): # NEED TO FIX REFERENCE GENERATION so that it includes orientation information somehow for final state
+        for k in range(self.pred_horizn): # NEED TO FIX REFERENCE GENERATION so that it includes orientation information somehow for final state
             # State Cost (penalize deviation from REFERENCE trajectory X_ref)
-            state_error = self.states[0:2, k] - self.ref_waypoints_params[0:2, k] # This is correct
-            state_cost = self.Q_running[0,0]*state_error[0]**2 + \
-                            self.Q_running[1,1]*state_error[1]**2 
+            state_error_xy = self.states[0:2, k] - self.ref_waypoints_params[0:2, k]
+
+            # Orientation error
+            # theta_error = self.states[2, k] - self.ref_waypoints_params[2, k]
+            # theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
+
+            state_cost = self.Q_running[0,0]*state_error_xy[0]**2 + \
+                        self.Q_running[1,1]*state_error_xy[1]**2 
+                        # self.Q_running[2,2]*theta_error_wrapped**2 # Add theta cost
             self.horizn_cost += state_cost
 
         # Add terminal cost (deviation from final goal)
@@ -140,7 +112,7 @@ class nmpc_node:
         for k in range(self.ctrl_horizn):
             # Linear velocity
             self.lbz[k*self.num_ctrls + 0] = self.max_velocity         # v_k lower bound (non-negative velocity)
-            self.ubz[k*self.num_ctrls + 0] = self.max_velocity     # v_k upper bound
+            self.ubz[k*self.num_ctrls + 0] = self.max_velocity    # v_k upper bound
             # Angular velocity
             self.lbz[k*self.num_ctrls + 1] = -self.max_angular_velocity    # ω_k lower bound
             self.ubz[k*self.num_ctrls + 1] = self.max_angular_velocity     # ω_k upper bound
@@ -230,7 +202,8 @@ class nmpc_node:
         print(self.constraints)
         
         self.opt_controls, self.opt_states = self.solver()
-
+        print("optimal control:")
+        print(self.opt_controls)
         return self.opt_controls, self.opt_states
         
 
@@ -305,3 +278,39 @@ class nmpc_node:
         # else:
 
         #     print("Safety constraint (h >= 0) appears satisfied.")
+        
+        
+        # class obstacles_2d:
+
+
+#     def create_obstacles_in_map():
+    
+
+#         obstacle_centers = np.random.rand(num_obstacles, 2) * 1.0 # Spread in [0, 1] box more broadly
+
+
+#         # Refilter based on start/goal
+
+#         min_start_goal_dist = 0.15 # Allow slightly closer obstacles
+
+#         valid_centers = []
+
+#         for center in obstacle_centers:
+
+#              if np.linalg.norm(center - x_current[:2]) > min_start_goal_dist and \
+
+#                 np.linalg.norm(center - x_goal[:2]) > min_dist_from_center + 0.05: # Ensure goal isn't inside safety zone
+
+#                  valid_centers.append(center)
+
+#         obstacle_centers = np.array(valid_centers)
+
+#         num_obstacles = obstacle_centers.shape[0]
+
+
+#         print(f"Using {num_obstacles} obstacles.")
+
+
+#         # Pre-calculate minimum squared distances from centers
+
+#         min_dist_sq_array = np.full(num_obstacles, min_dist_from_center**2)

@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
+import numpy as np
 # import seaborn as sb
 
-def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, ref_waypoints):
+def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, start, goal, ref_waypoints, sampling_time, v_max, omega_max):
     # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     plt.figure(figsize=(14, 7))
@@ -9,11 +10,11 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     # 1. Plot the (x, y) trajectory
     ax1 = plt.subplot(1, 2, 1)
     # Plot Optimized Trajectory
-    plt.plot(X_plot[0, :], X_plot[1, :], 'b-', marker='.', markersize=4, linewidth=1.5, label='Optimized Trajectory')
+    plt.plot(opt_states_0[0, :], opt_states_0[1, :], 'b-', marker='.', markersize=4, linewidth=1.5, label='Optimized Trajectory')
     # Plot Reference Trajectory
-    plt.plot(X_ref_traj[0, :], X_ref_traj[1, :], 'g--', alpha=0.7, linewidth=1.5, label='Reference Trajectory')
-    plt.scatter(x_current[0], x_current[1], c='lime', marker='o', s=150, label='Start', zorder=10, edgecolors='black')
-    plt.scatter(x_goal[0], x_goal[1], c='red', marker='X', s=150, label='Goal', zorder=10, edgecolors='black')
+    plt.plot(ref_waypoints[:, 0], ref_waypoints[:, 1], 'g-o', alpha=0.7, linewidth=1.5, label='Reference Trajectory')
+    plt.scatter(start[0], start[1], c='lime', marker='o', s=150, label='Start', zorder=10, edgecolors='black')
+    plt.scatter(goal[0], goal[1], c='red', marker='X', s=150, label='Goal', zorder=10, edgecolors='black')
 
     # # Draw obstacles and safety boundaries
     # for i in range(num_obstacles):
@@ -29,16 +30,16 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
 
     # Direction Arrows (Optional)
     # ... (keep arrow plotting code if desired) ...
-    arrow_skip = max(1, N // 20) # Show fewer arrows
+    arrow_skip = max(1, pred_horizn // 20) # Show fewer arrows
     head_width = 0.025
     head_length = 0.04
     arrow_color = 'darkcyan'
     arrow_length = 0.05 # Fixed length
 
-    for i in range(0, N + 1, arrow_skip):
-        x_pos = X_plot[0, i]
-        y_pos = X_plot[1, i]
-        theta = X_plot[2, i]
+    for i in range(0, pred_horizn, arrow_skip):
+        x_pos = opt_states_0[0, i]
+        y_pos = opt_states_0[1, i]
+        theta = opt_states_0[2, i]
         dx = arrow_length * np.cos(theta)
         dy = arrow_length * np.sin(theta)
         plt.arrow(x_pos, y_pos, dx, dy,
@@ -56,19 +57,21 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
 
     # 2. Plot control inputs
     ax2 = plt.subplot(1, 2, 2)
-    time_steps = np.arange(ctrl_horizn) * dt
-    ax2.step(time_steps, U_opt[0, :], color='royalblue', where='post', linewidth=1.5, label='$v$ (m/s)')
-    ax2.step(time_steps, U_opt[1, :], color='firebrick', where='post', linewidth=1.5, label='$\\omega$ (rad/s)')
+    time_steps = np.arange(ctrl_horizn) * sampling_time
+    plt.plot(time_steps, opt_control_0[0, :], 'b-o', alpha=0.7, linewidth=1.5, label='Optimized linear velocity control')
+    plt.plot(time_steps, opt_control_0[1, :], 'r-o', alpha=0.7, linewidth=1.5, label='Optimized angular velocity control')
+    # ax2.step(time_steps, opt_control_0[0, :], color='royalblue', where='post', linewidth=1.5, linestyle='dashdot', label='$v$ (m/s)')
+    # ax2.step(time_steps, opt_control_0[1, :], color='firebrick', where='post', linewidth=1.5, linestyle='dashdot', label='$\\omega$ (rad/s)')
     ax2.axhline(v_max, color='royalblue', linestyle=':', alpha=0.5, label='$v_{max}$')
-    ax2.axhline(0, color='royalblue', linestyle=':', alpha=0.5)
-    ax2.axhline(ω_max, color='firebrick', linestyle=':', alpha=0.5, label='$\\omega_{max}$')
-    ax2.axhline(-ω_max, color='firebrick', linestyle=':', alpha=0.5)
+    ax2.axhline(-v_max, color='royalblue', linestyle=':', alpha=0.5)
+    ax2.axhline(omega_max, color='firebrick', linestyle=':', alpha=0.5, label='$\\omega_{max}$')
+    ax2.axhline(-omega_max, color='firebrick', linestyle=':', alpha=0.5)
     ax2.set_xlabel('Time (s)')
     ax2.set_ylabel('Control Inputs')
     ax2.set_title('Optimal Control Inputs')
     ax2.legend(fontsize='small')
-    ax2.set_ylim([-max(v_max, ω_max)*1.1, max(v_max, ω_max)*1.1])
-    ax2.set_xlim(0, N*dt)
+    ax2.set_ylim([-max(v_max, omega_max)*1.1, max(v_max, omega_max)*1.1])
+    ax2.set_xlim(0, ctrl_horizn*sampling_time)
 
     # # --- Plot 3: Minimum CBF Value (h_min) ---
     # plt.figure(figsize=(10, 5))
@@ -88,7 +91,7 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     # ax3.set_ylim([min_y, max_y])
     # ax3.set_xlim(0, N*dt)
     # plt.tight_layout(pad=2.0)
-    # plt.show()
+    plt.show()
 
 
     # # --- Calculate Tracking Error (Optional) ---

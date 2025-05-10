@@ -25,36 +25,46 @@ safe_distance = 0.05  # Minimum distance robot center should maintain from obsta
 min_dist_from_center = obstacle_radius + safe_distance
 
 # Simulation parameters
-pred_horizn = 20
-ctrl_horizn = 20
+pred_horizn = 40
+ctrl_horizn = 40
 dt = 0.1  # Sampling time (seconds)
 
 # Robot 0 parameters
 num_states = 3
 num_control = 2
 v_max = 1.0  # Maximum linear velocity (m/s)
-omega_max = np.pi / 4  # Maximum angular velocity (rad/s) (~45 deg/s)
+omega_max = np.pi   # Maximum angular velocity (rad/s) (~45 deg/s)
 large_number = cas.inf  # Use CasADi infinity for bounds
 goal_reached = False
+Q_running = cas.diag([5.0, 5.0, 0.5])       # Weights for tracking reference state [x, y, θ]
+R_running = cas.diag([1.0, 0.05])            # Weights for control effort [v, ω] - Keep this!
+Q_terminal = cas.diag([50.0, 50.0, 50.0])   # Weights for final state deviation from goal
+
 
 # Goal Robot 0
-goal_0 = [1.0, 1.0, 0.0] # Goal state [x_g0, y_g0, theta_g0]
+goal_0 = [1.0, 1.0, 3.141] # Goal state [x_g0, y_g0, theta_g0]
 # Define starting state Robot 0
 start_0 = [0.0, 0.0, 0.0]  # Starting state [x0, y0, theta0]
 
 # Handles for Robot 0
 ref_generator_0 = ref_generator_2d(start=start_0, goal=goal_0, max_velocity=v_max * dt, pred_horizn=pred_horizn)
-nmpc_node_robot_0 = nmpc_node(num_states=num_states, num_controls=num_control, pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, start=start_0, max_velocity=v_max, max_angular_velocity=omega_max, sampling_time=dt)
+nmpc_node_robot_0 = nmpc_node(num_states=num_states, num_controls=num_control, 
+                              pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, 
+                              start=start_0, max_velocity=v_max, max_angular_velocity=omega_max, 
+                              sampling_time=dt, Q_running=Q_running, R_running=R_running, Q_terminal=Q_terminal)
 current_state_0=start_0
 
 # # NMPC loop
 # while goal_reached == False:
     
-waypoints_ref_0 = ref_generator_0.generate_waypoints(current_state=current_state_0)
+ref_waypoints_0 = ref_generator_0.generate_waypoints(current_state=current_state_0)
 print("Generated Waypoints:")
-print(waypoints_ref_0)
-opt_control_0, opt_states_0 = nmpc_node_robot_0.solve_nmpc(ref_waypoints=waypoints_ref_0)
-
+print(ref_waypoints_0)
+opt_control_0, opt_states_0 = nmpc_node_robot_0.solve_nmpc(ref_waypoints=ref_waypoints_0)
+plot_states_controls(pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, 
+                     opt_states_0=opt_states_0, opt_control_0=opt_control_0, 
+                     start=start_0, goal=goal_0, ref_waypoints=ref_waypoints_0, 
+                     sampling_time=dt, v_max=v_max, omega_max=omega_max)
 
 
 
