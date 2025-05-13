@@ -1,17 +1,18 @@
 import numpy as np
 import casadi as cas
 from dynamics import unicycle_dynamics
+import matplotlib.pyplot as plt
 import time
 
 
 class ref_generator_2d:
     
     
-    def __init__(self, start, goal, max_velocity, pred_horizn):
+    def __init__(self, start, goal, max_velocity_step, pred_horizn):
 
         self.start = np.array(start)
         self.goal = np.array(goal)  # Convert goal to a NumPy array
-        self.max_velocity = max_velocity
+        self.max_velocity_step = max_velocity_step
         self.pred_horizn = pred_horizn
         self.distance_to_goal_from_start = np.linalg.norm(self.goal[:2] - self.start[:2])
 
@@ -23,12 +24,12 @@ class ref_generator_2d:
         direction = self.goal[:2] - current_state[:2]
         distance_to_goal = np.linalg.norm(direction)
 
-        if distance_to_goal <= self.max_velocity:
+        if distance_to_goal <= self.max_velocity_step:
             goal_list = self.goal.tolist()
             waypoints = [goal_list for _ in range(self.pred_horizn)]
             return np.array(waypoints)
 
-        step = self.max_velocity * direction / distance_to_goal
+        step = self.max_velocity_step * direction / distance_to_goal
 
         for _ in range(self.pred_horizn):
             current_state[:2] += step
@@ -49,7 +50,8 @@ class nmpc_node:
     def __init__(self, num_states, num_controls, 
                  pred_horizn, ctrl_horizn, start,
                  max_velocity, max_angular_velocity, 
-                 sampling_time, Q_running, R_running, Q_terminal):
+                 sampling_time, Q_running, R_running, Q_terminal,
+                 num_obstacles, obstacle_centers, safe_distance, min_dist_from_center):
 
         self.num_states = num_states              # Number of states
         self.num_ctrls = num_controls                  # Control inputs
@@ -60,7 +62,11 @@ class nmpc_node:
         self.max_velocity = max_velocity
         self.max_angular_velocity = max_angular_velocity
         self.dt = sampling_time
-
+        # Obstacle parameters
+        self.num_obstacles = num_obstacles
+        self.obstacle_centers = obstacle_centers
+        self.safe_distance = safe_distance
+        self.min_dist_from_center = min_dist_from_center
         # Constants defined
         self.Q_running = Q_running      # Weights for tracking reference state [x, y, θ]
         self.R_running = R_running      # Weights for control effort [v, ω] - Keep this!
@@ -75,25 +81,29 @@ class nmpc_node:
         # Control cost
         for k in range(self.ctrl_horizn):
             # Control Cost (penalize effort)
-            control = self.controls[:, k]
+            control = self.pred_controls[:, k]
             self.horizn_cost += control.T @ self.R_running @ control
 
         # State error cost
         for k in range(self.pred_horizn): # NEED TO FIX REFERENCE GENERATION so that it includes orientation information somehow for final state
             # State Cost (penalize deviation from REFERENCE trajectory X_ref)
-            state_error_xy = self.states[0:2, k] - self.ref_waypoints_params[0:2, k]
+            state_error_xy = self.pred_states[0:2, k] - self.ref_waypoints_params[0:2, k]
 
             # Orientation error
-            # theta_error = self.states[2, k] - self.ref_waypoints_params[2, k]
+            # theta_error = self.pred_states[2, k] - self.ref_waypoints_params[2, k]
             # theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
 
             state_cost = self.Q_running[0,0]*state_error_xy[0]**2 + \
                         self.Q_running[1,1]*state_error_xy[1]**2 
                         # self.Q_running[2,2]*theta_error_wrapped**2 # Add theta cost
-            self.horizn_cost += state_cost
+            self.horizn_cost += k * state_cost
+            
+            # Goal cost should be added here so that it remains invariant to number of steps
+            
+            
 
         # Add terminal cost (deviation from final goal)
-        terminal_state_error = self.states[:,self.pred_horizn-1] - self.ref_waypoints_params[:,self.pred_horizn-1]
+        terminal_state_error = self.pred_states[:,self.pred_horizn-1] - self.ref_waypoints_params[:,self.pred_horizn-1]
         terminal_theta_error = terminal_state_error[2]
         terminal_theta_error_wrapped = cas.atan2(cas.sin(terminal_theta_error), cas.cos(terminal_theta_error))
         terminal_cost = self.Q_terminal[0,0]*terminal_state_error[0]**2 + \
@@ -111,7 +121,7 @@ class nmpc_node:
         # General input constraints: 0 <= v_k <= v_max, -ω_max <= ω_k <= ω_max 
         for k in range(self.ctrl_horizn):
             # Linear velocity
-            self.lbz[k*self.num_ctrls + 0] = self.max_velocity         # v_k lower bound (non-negative velocity)
+            self.lbz[k*self.num_ctrls + 0] = 0        # v_k lower bound (non-negative velocity)
             self.ubz[k*self.num_ctrls + 0] = self.max_velocity    # v_k upper bound
             # Angular velocity
             self.lbz[k*self.num_ctrls + 1] = -self.max_angular_velocity    # ω_k lower bound
@@ -125,17 +135,27 @@ class nmpc_node:
         # 1. Dynamics Constraints (x_{k+1} = f(x_k, u_k)) - Uses symbolic x0 from p
         for k in range(self.pred_horizn):
 
-            x_curr_step = self.states[:, k-1] if k > 0 else self.start # State at start of interval k
-            u_curr_step = self.controls[:, k]                   # Control during interval k
+            x_curr_step = self.pred_states[:, k-1] if k > 0 else self.current_state # State at start of interval k
+            u_curr_step = self.pred_controls[:, k]                   # Control during interval k
 
             x_next_pred = unicycle_dynamics(x_curr_step, u_curr_step, self.dt) # Predicted state at end of interval
-            self.constraints.append(self.states[:, k] - x_next_pred) # Constraint: x_{k+1} - f(x_k, u_k) = 0
+            self.constraints.append(self.pred_states[:, k] - x_next_pred) # Constraint: x_{k+1} - f(x_k, u_k) = 0
 
             self.lb_constraints.extend([0.0] * self.num_states) # Equality constraint: lower bound = 0
             self.ub_constraints.extend([0.0] * self.num_states) # Equality constraint: upper bound = 0
 
 
-        
+        # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
+        for k in range(self.pred_horizn): # For each time step in the prediction horizon
+            pos_k = self.pred_states[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
+            for obs_idx in range(self.num_obstacles): # For each obstacle
+                obs_center = self.obstacle_centers[obs_idx, :]
+                min_dist_sq = self.min_dist_from_center**2
+                dist_sq = cas.sumsqr(pos_k - obs_center) # Squared distance from obstacle center
+                h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
+                self.constraints.append(h_k_obs)
+                self.lb_constraints.append(0.0)
+                self.ub_constraints.append(large_number)
 
         self.constraints = cas.vertcat(*self.constraints) # Stack constraints into a single vector
         self.lb_constraints = np.array(self.lb_constraints)
@@ -183,17 +203,18 @@ class nmpc_node:
         return opt_controls, opt_states
 
 
-    def solve_nmpc(self, ref_waypoints):
-
+    def solve_nmpc(self, ref_waypoints, current_state):
+        
         # Parameter vector 'p' now contains initial state AND reference waypoints
         self.ref_waypoints_params = cas.SX.sym('p', self.num_states, self.pred_horizn)  # [number of states; current_position + prediction horizon]
         # Create the parameter vector value including the reference trajectory
         self.ref_waypoints_params_value = ref_waypoints.T
+        self.current_state = current_state
         
         # Decision variables declared and controls and predicted states reshaped
         self.Z = cas.SX.sym('Z', self.num_ctrls * self.ctrl_horizn + self.num_states * self.pred_horizn)  # [vec(U); vec(X)]
-        self.controls = cas.reshape(self.Z[0:self.num_ctrls * self.ctrl_horizn], self.num_ctrls, self.ctrl_horizn)         # Symbolic Controls u0 to u_{N-1}
-        self.states = cas.reshape(self.Z[self.num_ctrls * self.ctrl_horizn:], self.num_states, self.pred_horizn)          # Symbolic States x1 to xN
+        self.pred_controls = cas.reshape(self.Z[0:self.num_ctrls * self.ctrl_horizn], self.num_ctrls, self.ctrl_horizn)         # Symbolic Controls u0 to u_{N-1}
+        self.pred_states = cas.reshape(self.Z[self.num_ctrls * self.ctrl_horizn:], self.num_states, self.pred_horizn)          # Symbolic States x1 to xN
         
         self.cost_objective()
         print(self.horizn_cost)
@@ -202,6 +223,7 @@ class nmpc_node:
         print(self.constraints)
         
         self.opt_controls, self.opt_states = self.solver()
+        # self.current_state_0 = self.opt_states_0[:, 0]
         print("optimal control:")
         print(self.opt_controls)
         return self.opt_controls, self.opt_states

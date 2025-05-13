@@ -1,32 +1,37 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.patches import Circle # Import Circle patch
+
 # import seaborn as sb
 
-def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, start, goal, ref_waypoints, sampling_time, v_max, omega_max):
+def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
+                         start, goal, ref_waypoints, sampling_time, v_max, omega_max,
+                         num_obstacles, obstacle_centers, obstacle_radius, safe_distance, min_dist_from_center):
     # --- Plotting ---
+    plt.close("all")
     plt.style.use('seaborn-v0_8-whitegrid')
     plt.figure(figsize=(14, 7))
 
     # 1. Plot the (x, y) trajectory
     ax1 = plt.subplot(1, 2, 1)
     # Plot Optimized Trajectory
-    plt.plot(opt_states_0[0, :], opt_states_0[1, :], 'b-', marker='.', markersize=4, linewidth=1.5, label='Optimized Trajectory')
+    ax1.plot(opt_states_0[0, :], opt_states_0[1, :], 'b-', marker='.', markersize=4, linewidth=1.5, label='Optimized Trajectory')
     # Plot Reference Trajectory
-    plt.plot(ref_waypoints[:, 0], ref_waypoints[:, 1], 'g-o', alpha=0.7, linewidth=1.5, label='Reference Trajectory')
-    plt.scatter(start[0], start[1], c='lime', marker='o', s=150, label='Start', zorder=10, edgecolors='black')
-    plt.scatter(goal[0], goal[1], c='red', marker='X', s=150, label='Goal', zorder=10, edgecolors='black')
+    ax1.plot(ref_waypoints[:, 0], ref_waypoints[:, 1], 'g-o', alpha=0.7, linewidth=1.5, label='Reference Trajectory')
+    ax1.scatter(start[0], start[1], c='lime', marker='o', s=150, label='Start', zorder=10, edgecolors='black')
+    ax1.scatter(goal[0], goal[1], c='red', marker='X', s=150, label='Goal', zorder=10, edgecolors='black')
 
-    # # Draw obstacles and safety boundaries
-    # for i in range(num_obstacles):
-    #     obs_center_plot = obstacle_centers[i]
-    #     obstacle_patch = Circle(obs_center_plot, obstacle_radius, color='black', alpha=0.6, zorder=5)
-    #     ax1.add_patch(obstacle_patch)
-    #     safety_circle = Circle(obs_center_plot, min_dist_from_center, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=4)
-    #     ax1.add_patch(safety_circle)
+    # Draw obstacles and safety boundaries
+    for i in range(num_obstacles):
+        obs_center_plot = obstacle_centers[i]
+        obstacle_patch = Circle(obs_center_plot, obstacle_radius, color='black', alpha=0.6, zorder=5)
+        ax1.add_patch(obstacle_patch)
+        safety_circle = Circle(obs_center_plot, min_dist_from_center, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=4)
+        ax1.add_patch(safety_circle)
 
-    # # Add dummy patches for legend
-    # ax1.add_patch(Circle((0,0), 0.01, color='black', alpha=0.6, label=f'Obstacles (r={obstacle_radius:.2f})'))
-    # ax1.add_patch(Circle((0,0), 0.01, color='darkorange', fill=False, linestyle=':', label=f'Safety Boundary (d={safe_distance:.2f})'))
+    # Add dummy patches for legend
+    ax1.add_patch(Circle((0,0), 0.01, color='black', alpha=0.6, label=f'Obstacles (r={obstacle_radius:.2f})'))
+    ax1.add_patch(Circle((0,0), 0.01, color='darkorange', fill=False, linestyle=':', label=f'Safety Boundary (d={safe_distance:.2f})'))
 
     # Direction Arrows (Optional)
     # ... (keep arrow plotting code if desired) ...
@@ -58,8 +63,8 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     # 2. Plot control inputs
     ax2 = plt.subplot(1, 2, 2)
     time_steps = np.arange(ctrl_horizn) * sampling_time
-    plt.plot(time_steps, opt_control_0[0, :], 'b-o', alpha=0.7, linewidth=1.5, label='Optimized linear velocity control')
-    plt.plot(time_steps, opt_control_0[1, :], 'r-o', alpha=0.7, linewidth=1.5, label='Optimized angular velocity control')
+    ax2.plot(time_steps, opt_control_0[0, :], 'b-o', alpha=0.7, linewidth=1.5, label='Optimized linear velocity control')
+    ax2.plot(time_steps, opt_control_0[1, :], 'r-o', alpha=0.7, linewidth=1.5, label='Optimized angular velocity control')
     # ax2.step(time_steps, opt_control_0[0, :], color='royalblue', where='post', linewidth=1.5, linestyle='dashdot', label='$v$ (m/s)')
     # ax2.step(time_steps, opt_control_0[1, :], color='firebrick', where='post', linewidth=1.5, linestyle='dashdot', label='$\\omega$ (rad/s)')
     ax2.axhline(v_max, color='royalblue', linestyle=':', alpha=0.5, label='$v_{max}$')
@@ -72,6 +77,10 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     ax2.legend(fontsize='small')
     ax2.set_ylim([-max(v_max, omega_max)*1.1, max(v_max, omega_max)*1.1])
     ax2.set_xlim(0, ctrl_horizn*sampling_time)
+    plt.show()
+    plt.pause(0.01)
+    plt.close("all")
+
 
     # # --- Plot 3: Minimum CBF Value (h_min) ---
     # plt.figure(figsize=(10, 5))
@@ -91,7 +100,9 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     # ax3.set_ylim([min_y, max_y])
     # ax3.set_xlim(0, N*dt)
     # plt.tight_layout(pad=2.0)
-    plt.show()
+    # plt.show()
+    # plt.pause(0.01)
+    # plt.close("all")
 
 
     # # --- Calculate Tracking Error (Optional) ---
