@@ -32,8 +32,8 @@ else:
     obstacle_centers =  np.random.rand(num_obstacles, 2) * 1.0
 
 # Simulation parameters
-pred_horizn = 5
-ctrl_horizn = 5
+pred_horizn = 40
+ctrl_horizn = 40
 dt = 0.1  # Sampling time (seconds)
 
 # Robot 0 parameters
@@ -44,7 +44,7 @@ omega_max = np.pi   # Maximum angular velocity (rad/s) (~45 deg/s)
 large_number = cas.inf  # Use CasADi infinity for bounds
 goal_reached = False
 Q_running = cas.diag([100.0, 100.0, 0.0])       # Weights for tracking reference state [x, y, θ]
-R_running = cas.diag([1.0, 1.0])            # Weights for control effort [v, ω] - Keep this!
+R_running = cas.diag([10.0, 10.0])            # Weights for control effort [v, ω] - Keep this!
 Q_terminal = cas.diag([5.0, 5.0, 5.0])   # Weights for final state deviation from goal
 
 

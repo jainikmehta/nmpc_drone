@@ -79,10 +79,10 @@ class nmpc_node:
         self.horizn_cost = cas.SX(0)
 
         # Control cost
-        for k in range(self.ctrl_horizn):
-            # Control Cost (penalize effort)
-            control = self.pred_controls[:, k]
-            self.horizn_cost += control.T @ self.R_running @ control
+        # for k in range(self.ctrl_horizn):
+        #     # Control Cost (penalize effort)
+        #     control = self.pred_controls[:, k]
+        #     self.horizn_cost += control.T @ self.R_running @ control
 
         # State error cost
         for k in range(self.pred_horizn): # NEED TO FIX REFERENCE GENERATION so that it includes orientation information somehow for final state
@@ -90,12 +90,12 @@ class nmpc_node:
             state_error_xy = self.pred_states[0:2, k] - self.ref_waypoints_params[0:2, k]
 
             # Orientation error
-            # theta_error = self.pred_states[2, k] - self.ref_waypoints_params[2, k]
-            # theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
+            theta_error = self.pred_states[2, k] - self.ref_waypoints_params[2, k]
+            theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
 
             state_cost = self.Q_running[0,0]*state_error_xy[0]**2 + \
-                        self.Q_running[1,1]*state_error_xy[1]**2 
-                        # self.Q_running[2,2]*theta_error_wrapped**2 # Add theta cost
+                        self.Q_running[1,1]*state_error_xy[1]**2 + \
+                        self.Q_running[2,2]*theta_error_wrapped**2 # Add theta cost
             self.horizn_cost += k * state_cost
             
             # Goal cost should be added here so that it remains invariant to number of steps
@@ -103,13 +103,13 @@ class nmpc_node:
             
 
         # Add terminal cost (deviation from final goal)
-        terminal_state_error = self.pred_states[:,self.pred_horizn-1] - self.ref_waypoints_params[:,self.pred_horizn-1]
-        terminal_theta_error = terminal_state_error[2]
-        terminal_theta_error_wrapped = cas.atan2(cas.sin(terminal_theta_error), cas.cos(terminal_theta_error))
-        terminal_cost = self.Q_terminal[0,0]*terminal_state_error[0]**2 + \
-                        self.Q_terminal[1,1]*terminal_state_error[1]**2 + \
-                        self.Q_terminal[2,2]*terminal_theta_error_wrapped**2
-        self.horizn_cost += 100*terminal_cost
+        # terminal_state_error = self.pred_states[:,self.pred_horizn-1] - self.ref_waypoints_params[:,self.pred_horizn-1]
+        # terminal_theta_error = terminal_state_error[2]
+        # terminal_theta_error_wrapped = cas.atan2(cas.sin(terminal_theta_error), cas.cos(terminal_theta_error))
+        # terminal_cost = self.Q_terminal[0,0]*terminal_state_error[0]**2 + \
+        #                 self.Q_terminal[1,1]*terminal_state_error[1]**2 + \
+        #                 self.Q_terminal[2,2]*terminal_theta_error_wrapped**2
+        # self.horizn_cost += 100*terminal_cost
         
     def get_constraints(self,):
         large_number = cas.inf # Use CasADi infinity for bounds
