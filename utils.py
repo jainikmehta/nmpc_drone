@@ -33,6 +33,7 @@ class ref_generator_2d:
 
         for _ in range(self.pred_horizn):
             current_state[:2] += step
+            current_state[2] = cas.atan2(direction[1], direction[0])
             curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
             
             if curr_distance >= self.distance_to_goal_from_start:
@@ -85,31 +86,26 @@ class nmpc_node:
         #     self.horizn_cost += control.T @ self.R_running @ control
 
         # State error cost
-        for k in range(self.pred_horizn): # NEED TO FIX REFERENCE GENERATION so that it includes orientation information somehow for final state
+        for k in range(self.pred_horizn): # Iterate through the prediction horizon for states
             # State Cost (penalize deviation from REFERENCE trajectory X_ref)
             state_error_xy = self.pred_states[0:2, k] - self.ref_waypoints_params[0:2, k]
-
-            # Orientation error
             theta_error = self.pred_states[2, k] - self.ref_waypoints_params[2, k]
             theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
 
             state_cost = self.Q_running[0,0]*state_error_xy[0]**2 + \
-                        self.Q_running[1,1]*state_error_xy[1]**2 + \
-                        self.Q_running[2,2]*theta_error_wrapped**2 # Add theta cost
-            self.horizn_cost += k * state_cost
+                         self.Q_running[1,1]*state_error_xy[1]**2 + \
+                         self.Q_running[2,2]*theta_error_wrapped**2 
+            self.horizn_cost += state_cost
             
-            # Goal cost should be added here so that it remains invariant to number of steps
-            
-            
+        # theta_error = self.pred_states[2, self.pred_horizn-1] - self.ref_waypoints_params[2, self.pred_horizn-1]
+        # #     # Wrap angle error to be within -pi to pi
+        # theta_error_wrapped = cas.atan2(cas.sin(theta_error), cas.cos(theta_error))
+        # distance_from_terminal_state_error = self.pred_states[:,0] - self.ref_waypoints_params[:,self.pred_horizn-1]
 
-        # Add terminal cost (deviation from final goal)
-        # terminal_state_error = self.pred_states[:,self.pred_horizn-1] - self.ref_waypoints_params[:,self.pred_horizn-1]
-        # terminal_theta_error = terminal_state_error[2]
-        # terminal_theta_error_wrapped = cas.atan2(cas.sin(terminal_theta_error), cas.cos(terminal_theta_error))
-        # terminal_cost = self.Q_terminal[0,0]*terminal_state_error[0]**2 + \
-        #                 self.Q_terminal[1,1]*terminal_state_error[1]**2 + \
-        #                 self.Q_terminal[2,2]*terminal_theta_error_wrapped**2
-        # self.horizn_cost += 100*terminal_cost
+        # terminal_cost = self.Q_terminal[0,0]*distance_from_terminal_state_error[0]**2 + \
+        #                          self.Q_terminal[1,1]*distance_from_terminal_state_error[1]**2 
+        # self.horizn_cost += 10*terminal_cost
+            
         
     def get_constraints(self,):
         large_number = cas.inf # Use CasADi infinity for bounds
@@ -145,7 +141,7 @@ class nmpc_node:
             self.ub_constraints.extend([0.0] * self.num_states) # Equality constraint: upper bound = 0
 
 
-        # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
+        # # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
         for k in range(self.pred_horizn): # For each time step in the prediction horizon
             pos_k = self.pred_states[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
             for obs_idx in range(self.num_obstacles): # For each obstacle
@@ -216,90 +212,49 @@ class nmpc_node:
         self.pred_controls = cas.reshape(self.Z[0:self.num_ctrls * self.ctrl_horizn], self.num_ctrls, self.ctrl_horizn)         # Symbolic Controls u0 to u_{N-1}
         self.pred_states = cas.reshape(self.Z[self.num_ctrls * self.ctrl_horizn:], self.num_states, self.pred_horizn)          # Symbolic States x1 to xN
         
+        # Define cost objective
         self.cost_objective()
         print(self.horizn_cost)
-
+        
+        # Define constraints
         self.get_constraints()
         print(self.constraints)
         
+        # Solve NMPC problem
         self.opt_controls, self.opt_states = self.solver()
-        # self.current_state_0 = self.opt_states_0[:, 0]
         print("optimal control:")
         print(self.opt_controls)
-        return self.opt_controls, self.opt_states
-        
-
-    #     # 2. Control Barrier Function (CBF) Constraints - NO CHANGE
-
-        #     for k in range(N): # For each time step in the prediction horizon
-
-        #         pos_k = X[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
-
-        #         for obs_idx in range(num_obstacles): # For each obstacle
-
-        #             obs_center = obstacle_centers[obs_idx, :]
-
-        #             min_dist_sq = min_dist_sq_array[obs_idx]
-
-        #             dist_sq = cas.sumsqr(pos_k - obs_center) # Squared distance from obstacle center
-
-        #             h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
-
-        #             g.append(h_k_obs)
-
-        #             lbg.append(0.1)
-
-        #             ubg.append(large_number)
-
-
-        #     # --- Combine constraints and bounds ---
-
-        #     # REMOVE the explicit final state constraint if using terminal cost
-
-        #     g.append(X[:, N-1] - x_goal) # Goal constraint X_N = x_goal
-
-        #     lbg.extend([-1e-3] * nx) # Allow small tolerance
-
-        #     ubg.extend([1e-3] * nx)
+        print("optimal states:")
+        print(self.opt_states)
         
         
+        # --- Calculate CBF (h) values along the optimal trajectory ---
+
+        h_values = np.zeros((self.num_obstacles, self.pred_horizn))
+        for k in range(self.pred_horizn):  # Iterate over each time step of the optimal trajectory X_opt
+            pos_k_opt = self.opt_states[0:2, k]  # Optimal position at time step k
+            for obs_idx in range(self.num_obstacles):
+                obs_center = self.obstacle_centers[obs_idx, :]
+                
+                # Calculate h = ||pos_opt - obs_center||^2 - min_dist_sq
+                min_dist_sq = self.min_dist_from_center**2 # Obstacle_radius + safe_distance
+                dist_sq = cas.sumsqr(pos_k_opt - obs_center) # Squared distance from obstacle center
+                h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
+                h_values[obs_idx, k] = h_k_obs
+
+        # Find the minimum h value across all obstacles at each time step
+        min_h_values = np.min(h_values, axis=0)
+        min_overall_h = np.min(min_h_values) # Smallest h value achieved over the entire trajectory
+        print(f"Minimum CBF value (h_min) reached during trajectory: {min_overall_h:.4f}")
+
+        if min_overall_h < -1e-4: # Allow small numerical tolerance
+            print("WARNING: Safety constraint (h >= 0) appears to be violated!")
+        else:
+            print("Safety constraint (h >= 0) appears satisfied.")
         
-        # # --- Calculate CBF (h) values along the optimal trajectory ---
-
-        # h_values = np.zeros((num_obstacles, N))
-
-        # for k in range(N):  # Iterate over each time step of the optimal trajectory X_opt
-
-        #     pos_k_opt = X_opt[0:2, k]  # Optimal position at time step k
-
-        #     for obs_idx in range(num_obstacles):
-
-        #         obs_center = obstacle_centers[obs_idx, :]
-
-        #         min_dist_sq = min_dist_sq_array[obs_idx]
-
-        #         # Calculate h = ||pos_opt - obs_center||^2 - min_dist_sq
-
-        #         dist_sq_opt = np.sum((pos_k_opt - obs_center)**2)
-
-        #         h_values[obs_idx, k] = dist_sq_opt - min_dist_sq
-
-
-        # # Find the minimum h value across all obstacles at each time step
-
-        # min_h_values = np.min(h_values, axis=0)
-
-        # min_overall_h = np.min(min_h_values) # Smallest h value achieved over the entire trajectory
-
-        # print(f"Minimum CBF value (h_min) reached during trajectory: {min_overall_h:.4f}")
-
-        # if min_overall_h < -1e-4: # Allow small numerical tolerance
-
-        #     print("WARNING: Safety constraint (h >= 0) appears to be violated!")
-
-        # else:
-
-        #     print("Safety constraint (h >= 0) appears satisfied.")
+        return self.opt_controls, self.opt_states, min_h_values
+        
+        
         
         
         # class obstacles_2d:

@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('TkAgg') # Or 'Qt5Agg', 'QtAgg', 'wxAgg', 'MacOSX', etc.
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle # Import Circle patch
@@ -6,14 +8,15 @@ from matplotlib.patches import Circle # Import Circle patch
 
 def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
                          start, goal, ref_waypoints, sampling_time, v_max, omega_max,
-                         num_obstacles, obstacle_centers, obstacle_radius, safe_distance, min_dist_from_center):
+                         num_obstacles, obstacle_centers, obstacle_radius, safe_distance, min_dist_from_center,
+                         min_h_values):
     # --- Plotting ---
     plt.close("all")
     plt.style.use('seaborn-v0_8-whitegrid')
     plt.figure(figsize=(14, 7))
 
     # 1. Plot the (x, y) trajectory
-    ax1 = plt.subplot(1, 2, 1)
+    ax1 = plt.subplot(2, 1, 1)
     # Plot Optimized Trajectory
     ax1.plot(opt_states_0[0, :], opt_states_0[1, :], 'b-', marker='.', markersize=4, linewidth=1.5, label='Optimized Trajectory')
     # Plot Reference Trajectory
@@ -61,7 +64,7 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
     plt.ylim(-0.5, 1.5)
 
     # 2. Plot control inputs
-    ax2 = plt.subplot(1, 2, 2)
+    ax2 = plt.subplot(2, 1, 2)
     time_steps = np.arange(ctrl_horizn) * sampling_time
     ax2.plot(time_steps, opt_control_0[0, :], 'b-o', alpha=0.7, linewidth=1.5, label='Optimized linear velocity control')
     ax2.plot(time_steps, opt_control_0[1, :], 'r-o', alpha=0.7, linewidth=1.5, label='Optimized angular velocity control')
@@ -77,15 +80,12 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
     ax2.legend(fontsize='small')
     ax2.set_ylim([-max(v_max, omega_max)*1.1, max(v_max, omega_max)*1.1])
     ax2.set_xlim(0, ctrl_horizn*sampling_time)
-    plt.show()
-    plt.pause(0.01)
-    plt.close("all")
 
 
-    # # --- Plot 3: Minimum CBF Value (h_min) ---
-    # plt.figure(figsize=(10, 5))
-    # ax3 = plt.gca()
-    # time_steps_h = np.arange(N) * dt # Time steps for X_opt states (0 to N-1)
+    # # # # --- Plot 3: Minimum CBF Value (h_min) ---
+    # # plt.figure(figsize=(10, 5))
+    # ax3 = plt.subplot(3, 1, 3)
+    # time_steps_h = np.arange(pred_horizn) * sampling_time # Time steps for X_opt states (0 to N-1)
     # ax3.plot(time_steps_h, min_h_values, 'm-', linewidth=1.5, label='$h_{min}(t) = min_i(||x(t)-c_i||^2 - d_{min}^2)$')
     # # Add the safety boundary line h=0
     # ax3.axhline(0, color='r', linestyle='--', linewidth=1.5, label='Safety Boundary ($h=0$)')
@@ -98,11 +98,11 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
     # min_y = min(np.min(min_h_values), -0.01) # Ensure 0 is visible even if h_min is positive
     # max_y = max(np.max(min_h_values) * 1.1, 0.1) # Add some space above
     # ax3.set_ylim([min_y, max_y])
-    # ax3.set_xlim(0, N*dt)
+    # ax3.set_xlim(0, pred_horizn*sampling_time)
     # plt.tight_layout(pad=2.0)
-    # plt.show()
-    # plt.pause(0.01)
-    # plt.close("all")
+    plt.show()
+    plt.pause(0.01)
+    plt.close("all")
 
 
     # # --- Calculate Tracking Error (Optional) ---

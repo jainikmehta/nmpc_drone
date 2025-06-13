@@ -22,18 +22,18 @@ neg_ylimit = -1
 random_obstacles = False
 num_obstacles = 1  # number of random obstacles if using
 obstacle_radius = 0.05  # Radius of the physical obstacle
-safe_distance = 0.4  # Minimum distance robot center should maintain from obstacle EDGE
+safe_distance = 0.04  # Minimum distance robot center should maintain from obstacle EDGE
 min_dist_from_center = obstacle_radius + safe_distance
 
 if random_obstacles == False:
-    obstacle_centers = np.array([[0.75, 0.5]])
+    obstacle_centers = np.array([[0.25, 0.75]])
     num_obstacles = len(obstacle_centers)
 else:
     obstacle_centers =  np.random.rand(num_obstacles, 2) * 1.0
 
 # Simulation parameters
-pred_horizn = 40
-ctrl_horizn = 40
+pred_horizn = 15
+ctrl_horizn = 15
 dt = 0.1  # Sampling time (seconds)
 
 # Robot 0 parameters
@@ -43,9 +43,9 @@ v_max = 1.0  # Maximum linear velocity (m/s)
 omega_max = np.pi   # Maximum angular velocity (rad/s) (~45 deg/s)
 large_number = cas.inf  # Use CasADi infinity for bounds
 goal_reached = False
-Q_running = cas.diag([100.0, 100.0, 0.0])       # Weights for tracking reference state [x, y, θ]
-R_running = cas.diag([10.0, 10.0])            # Weights for control effort [v, ω] - Keep this!
-Q_terminal = cas.diag([5.0, 5.0, 5.0])   # Weights for final state deviation from goal
+Q_running = cas.diag([10.0, 10.0, 2])       # Weights for tracking reference state [x, y, θ]
+R_running = cas.diag([10.0, 10.0])            #  Weights for control effort [v, ω] - Keep this!
+Q_terminal = cas.diag([500.0, 500.0, 500.0])   # Weights for final state deviation from goal
 
 
 # Goal Robot 0
@@ -68,7 +68,7 @@ while goal_reached == False:
     ref_waypoints_0 = ref_generator_0.generate_waypoints(current_state=current_state_0)
     print("Generated Waypoints:")
     print(ref_waypoints_0)
-    opt_control_0, opt_states_0 = nmpc_node_robot_0.solve_nmpc(ref_waypoints=ref_waypoints_0, current_state=current_state_0)
+    opt_control_0, opt_states_0, min_h_values = nmpc_node_robot_0.solve_nmpc(ref_waypoints=ref_waypoints_0, current_state=current_state_0)
     # Do simple plot with static obstacle
     # Apply the first control input. Basically store first input and state as well as all the predicted states.
     current_state_0 = opt_states_0[:, 0]
@@ -82,5 +82,5 @@ while goal_reached == False:
                         sampling_time=dt, v_max=v_max, omega_max=omega_max,
                         num_obstacles=num_obstacles, obstacle_centers=obstacle_centers, 
                         safe_distance=safe_distance, obstacle_radius=obstacle_radius,
-                        min_dist_from_center=min_dist_from_center)
+                        min_dist_from_center=min_dist_from_center, min_h_values=min_h_values)
     
