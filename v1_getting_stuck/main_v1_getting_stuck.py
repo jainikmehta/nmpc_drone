@@ -22,18 +22,18 @@ neg_ylimit = -1
 random_obstacles = False
 num_obstacles = 1  # number of random obstacles if using
 obstacle_radius = 0.05  # Radius of the physical obstacle
-safe_distance = 0.04  # Minimum distance robot center should maintain from obstacle EDGE
+safe_distance = 0.05  # Minimum distance robot center should maintain from obstacle EDGE
 min_dist_from_center = obstacle_radius + safe_distance
 
 if random_obstacles == False:
-    obstacle_centers = np.array([[0.25, 0.75]])
+    obstacle_centers = np.array([[0.75, 0.75]])
     num_obstacles = len(obstacle_centers)
 else:
     obstacle_centers =  np.random.rand(num_obstacles, 2) * 1.0
 
 # Simulation parameters
-pred_horizn = 15
-ctrl_horizn = 15
+pred_horizn = 5
+ctrl_horizn = 5
 dt = 0.1  # Sampling time (seconds)
 
 # Robot 0 parameters
@@ -43,7 +43,7 @@ v_max = 1.0  # Maximum linear velocity (m/s)
 omega_max = np.pi   # Maximum angular velocity (rad/s) (~45 deg/s)
 large_number = cas.inf  # Use CasADi infinity for bounds
 goal_reached = False
-Q_running = cas.diag([10.0, 10.0, 2])       # Weights for tracking reference state [x, y, θ]
+Q_running = cas.diag([10.0, 10.0, 0.05])       # Weights for tracking reference state [x, y, θ]
 R_running = cas.diag([10.0, 10.0])            #  Weights for control effort [v, ω] - Keep this!
 Q_terminal = cas.diag([500.0, 500.0, 500.0])   # Weights for final state deviation from goal
 
@@ -62,10 +62,11 @@ nmpc_node_robot_0 = nmpc_node(num_states=num_states, num_controls=num_control,
                               sampling_time=dt, Q_running=Q_running, R_running=R_running, Q_terminal=Q_terminal,
                               num_obstacles=num_obstacles, obstacle_centers=obstacle_centers, safe_distance=safe_distance, min_dist_from_center=min_dist_from_center)
 current_state_0=start_0
-
+previous_waypoints = [current_state_0]*pred_horizn
 # # NMPC loop
 while goal_reached == False:
-    ref_waypoints_0 = ref_generator_0.generate_waypoints(current_state=current_state_0)
+    ref_waypoints_0 = ref_generator_0.generate_waypoints(previous_waypoints=np.array(previous_waypoints), current_state=current_state_0)
+    previous_waypoints = ref_waypoints_0
     print("Generated Waypoints:")
     print(ref_waypoints_0)
     opt_control_0, opt_states_0, min_h_values = nmpc_node_robot_0.solve_nmpc(ref_waypoints=ref_waypoints_0, current_state=current_state_0)
@@ -73,7 +74,8 @@ while goal_reached == False:
     # Apply the first control input. Basically store first input and state as well as all the predicted states.
     current_state_0 = opt_states_0[:, 0]
     dist_to_goal = (current_state_0[0] - goal_0[0])**2 + (current_state_0[1] - goal_0[1])**2
-    if dist_to_goal <= 0.01:
+    angle_to_goal = current_state_0[2] - goal_0[2]
+    if dist_to_goal <= 0.01 and angle_to_goal <= 0.1:
         goal_reached = True
     
     plot_states_controls(pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, 

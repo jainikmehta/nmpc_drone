@@ -16,9 +16,44 @@ class ref_generator_2d:
         self.pred_horizn = pred_horizn
         self.distance_to_goal_from_start = np.linalg.norm(self.goal[:2] - self.start[:2])
 
-    def generate_waypoints(self, current_state):
+    # def generate_waypoints(self, previous_waypoints, current_state):
 
-        current_state = np.array(current_state) # Convert current_state to a NumPy array
+    #     current_state = np.array(current_state) # Convert current_state to a NumPy array
+    #     waypoints = [] 
+
+    #     direction = self.goal[:2] - current_state[:2]
+    #     distance_to_goal = np.linalg.norm(direction)
+
+    #     if distance_to_goal <= self.max_velocity_step:
+    #         goal_list = self.goal.tolist()
+    #         waypoints = [goal_list for _ in range(self.pred_horizn)]
+    #         return np.array(waypoints)
+
+    #     step = self.max_velocity_step * direction / distance_to_goal
+            
+    #     for _ in range(self.pred_horizn):
+    #         current_state[:2] += step
+    #         current_state[2] = cas.atan2(direction[1], direction[0])
+    #         curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
+            
+    #         if curr_distance >= self.distance_to_goal_from_start:
+    #             waypoints.append(self.goal.tolist())
+    #         else:
+    #             waypoints.append(current_state.tolist())
+
+    #     if (previous_waypoints[0].tolist() == waypoints[0]):
+    #         # Take one more step
+    #         waypoints.pop(0)
+    #         last_waypoint = waypoints[self.pred_horizn-1]
+    #         waypoints.append(last_waypoint)
+            
+    #     return np.array(waypoints)
+    
+    
+    ## Continuously moving waypoints
+    def generate_waypoints(self, previous_waypoints, current_state):
+
+        current_state = previous_waypoints[0] # Convert current_state to a NumPy array
         waypoints = [] 
 
         direction = self.goal[:2] - current_state[:2]
@@ -30,7 +65,7 @@ class ref_generator_2d:
             return np.array(waypoints)
 
         step = self.max_velocity_step * direction / distance_to_goal
-
+            
         for _ in range(self.pred_horizn):
             current_state[:2] += step
             current_state[2] = cas.atan2(direction[1], direction[0])
@@ -41,7 +76,14 @@ class ref_generator_2d:
             else:
                 waypoints.append(current_state.tolist())
 
+        if (previous_waypoints[0].tolist() == waypoints[0]):
+            # Take one more step
+            waypoints.pop(0)
+            last_waypoint = waypoints[self.pred_horizn-1]
+            waypoints.append(last_waypoint)
+            
         return np.array(waypoints)
+
 
 
 

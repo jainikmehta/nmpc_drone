@@ -33,8 +33,8 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
         ax1.add_patch(safety_circle)
 
     # Add dummy patches for legend
-    ax1.add_patch(Circle((0,0), 0.01, color='black', alpha=0.6, label=f'Obstacles (r={obstacle_radius:.2f})'))
-    ax1.add_patch(Circle((0,0), 0.01, color='darkorange', fill=False, linestyle=':', label=f'Safety Boundary (d={safe_distance:.2f})'))
+    # ax1.add_patch(Circle((0,0), 0.01, color='black', alpha=0.6, label=f'Obstacles (r={obstacle_radius:.2f})'))
+    # ax1.add_patch(Circle((0,0), 0.01, color='darkorange', fill=False, linestyle=':', label=f'Safety Boundary (d={safe_distance:.2f})'))
 
     # Direction Arrows (Optional)
     # ... (keep arrow plotting code if desired) ...
@@ -100,8 +100,8 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
     # ax3.set_ylim([min_y, max_y])
     # ax3.set_xlim(0, pred_horizn*sampling_time)
     # plt.tight_layout(pad=2.0)
-    plt.show()
-    plt.pause(0.01)
+    plt.show(block=False)
+    plt.pause(2)
     plt.close("all")
 
 
