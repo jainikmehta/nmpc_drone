@@ -13,7 +13,7 @@ def plot_states_controls(pred_horizn, ctrl_horizn, opt_states_0, opt_control_0,
     # --- Plotting ---
     plt.close("all")
     plt.style.use('seaborn-v0_8-whitegrid')
-    plt.figure(figsize=(28, 20))
+    plt.figure(figsize=(14, 7))
 
     # 1. Plot the (x, y) trajectory
     ax1 = plt.subplot(2, 1, 1)

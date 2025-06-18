@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle  # Import Circle patch
 import time  # To time the solver
-from utils import nmpc_node, ref_generator_2d
-from plotting import plot_states_controls
+from utils_v2_avoid_obstacle_traj import nmpc_node, ref_generator_2d
+from plotting_v2_avoid_obstacle_traj import plot_states_controls
 # from dynamics import dynamics_unicycle
 
 
@@ -26,7 +26,7 @@ safe_distance = 0.05  # Minimum distance robot center should maintain from obsta
 min_dist_from_center = obstacle_radius + safe_distance
 
 if random_obstacles == False:
-    obstacle_centers = np.array([[0.75, 0.75]])
+    obstacle_centers = np.array([[0.7, 0.75], [0.3,0.3]])
     num_obstacles = len(obstacle_centers)
 else:
     obstacle_centers =  np.random.rand(num_obstacles, 2) * 1.0
@@ -40,6 +40,7 @@ dt = 0.1  # Sampling time (seconds)
 num_states = 3
 num_control = 2
 v_max = 1.0  # Maximum linear velocity (m/s)
+v_min = 0.2
 omega_max = np.pi   # Maximum angular velocity (rad/s) (~45 deg/s)
 large_number = cas.inf  # Use CasADi infinity for bounds
 goal_reached = False
@@ -58,14 +59,15 @@ store_opt_controls = []
 ref_generator_0 = ref_generator_2d(start=start_0, goal=goal_0, max_velocity_step=v_max * dt, pred_horizn=pred_horizn)
 nmpc_node_robot_0 = nmpc_node(num_states=num_states, num_controls=num_control, 
                               pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, 
-                              start=start_0, max_velocity=v_max, max_angular_velocity=omega_max,
+                              start=start_0, max_velocity=v_max, min_velocity=v_min, max_angular_velocity=omega_max,
                               sampling_time=dt, Q_running=Q_running, R_running=R_running, Q_terminal=Q_terminal,
                               num_obstacles=num_obstacles, obstacle_centers=obstacle_centers, safe_distance=safe_distance, min_dist_from_center=min_dist_from_center)
 current_state_0=start_0
 previous_waypoints = [current_state_0]*pred_horizn
 # # NMPC loop
 while goal_reached == False:
-    ref_waypoints_0 = ref_generator_0.generate_waypoints(previous_waypoints=np.array(previous_waypoints), current_state=current_state_0)
+    ref_waypoints_0 = ref_generator_0.generate_waypoints_avoid_obstacles(previous_waypoints=np.array(previous_waypoints), current_state=current_state_0,
+                                                                         obstacle_center=obstacle_centers[0], obstacle_radius=obstacle_radius)
     previous_waypoints = ref_waypoints_0
     print("Generated Waypoints:")
     print(ref_waypoints_0)
@@ -74,8 +76,11 @@ while goal_reached == False:
     # Apply the first control input. Basically store first input and state as well as all the predicted states.
     current_state_0 = opt_states_0[:, 0]
     dist_to_goal = (current_state_0[0] - goal_0[0])**2 + (current_state_0[1] - goal_0[1])**2
+    print("current_angle:", current_state_0[2])
+    print("goal_angle:", goal_0[2])
     angle_to_goal = current_state_0[2] - goal_0[2]
-    if dist_to_goal <= 0.01 and angle_to_goal <= 0.1:
+    print("angle_to_goal", angle_to_goal)
+    if dist_to_goal <= 0.01 and abs(angle_to_goal) <= 0.1:
         goal_reached = True
     
     plot_states_controls(pred_horizn=pred_horizn, ctrl_horizn=ctrl_horizn, 
