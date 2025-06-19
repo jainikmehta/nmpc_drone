@@ -1,6 +1,3 @@
-# The problem of using NMPC for quadcopter motion planning can be done in two ways:
-# 1) Provide general reference trajectory (non-optimal) to goal as input to NMPC solver as guess.
-# 2) Provide optimal reference trajectory as way points to NMPC solver
 
 
 import casadi as cas
@@ -66,8 +63,12 @@ current_state_0=start_0
 previous_waypoints = [current_state_0]*pred_horizn
 # # NMPC loop
 while goal_reached == False:
-    ref_waypoints_0 = ref_generator_0.generate_waypoints_avoid_obstacles(previous_waypoints=np.array(previous_waypoints), current_state=current_state_0,
-                                                                         obstacle_center=obstacle_centers[0], obstacle_radius=obstacle_radius)
+    ref_waypoints_0 = ref_generator_0.generate_waypoints_avoid_obstacles_multi(
+        previous_waypoints=np.array(previous_waypoints),
+        current_state=current_state_0,
+        obstacle_centers=obstacle_centers,
+        obstacle_radius=obstacle_radius
+    )
     previous_waypoints = ref_waypoints_0
     print("Generated Waypoints:")
     print(ref_waypoints_0)
@@ -90,4 +91,4 @@ while goal_reached == False:
                         num_obstacles=num_obstacles, obstacle_centers=obstacle_centers, 
                         safe_distance=safe_distance, obstacle_radius=obstacle_radius,
                         min_dist_from_center=min_dist_from_center, min_h_values=min_h_values)
-    
+

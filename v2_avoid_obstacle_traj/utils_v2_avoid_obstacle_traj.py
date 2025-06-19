@@ -95,6 +95,68 @@ class ref_generator_2d:
 
         return np.array(waypoints)
 
+    def generate_waypoints_avoid_obstacles_multi(self, previous_waypoints, current_state, obstacle_centers, obstacle_radius):
+        current_state = np.array(previous_waypoints[0])
+        waypoints = []
+        direction_to_goal = self.goal[:2] - current_state[:2]
+        distance_to_goal = np.linalg.norm(direction_to_goal)
+        avoidance_strength = 3.5
+        collision_threshold = obstacle_radius + self.max_velocity_step * 0.5
+        max_avoidance_iters = 5  # Prevent infinite loops
+
+        if distance_to_goal <= self.max_velocity_step:
+            goal_list = self.goal.tolist()
+            waypoints = [goal_list for _ in range(self.pred_horizn)]
+            return np.array(waypoints)
+
+        for i in range(self.pred_horizn):
+            nominal_step = self.max_velocity_step * direction_to_goal / distance_to_goal
+            next_waypoint_pos = current_state[:2] + nominal_step
+            avoidance_iter = 0
+            while avoidance_iter < max_avoidance_iters:
+                collision = False
+                avoidance_vector = np.zeros(2)
+                for obs_center in obstacle_centers:
+                    dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obs_center)
+                    if dist_to_obstacle < collision_threshold:
+                        collision = True
+                        vec_obstacle_to_waypoint = next_waypoint_pos - obs_center
+                        if np.linalg.norm(vec_obstacle_to_waypoint) < 1e-6:
+                            avoidance_direction = np.array([1.0, 0.0])
+                        else:
+                            avoidance_direction = vec_obstacle_to_waypoint / np.linalg.norm(vec_obstacle_to_waypoint)
+                        overlap = collision_threshold - dist_to_obstacle
+                        avoidance_vector += avoidance_direction * overlap * avoidance_strength
+                if collision:
+                    # Blend avoidance with goal direction for smoothness
+                    blended = 0.7 * avoidance_vector + 0.3 * (self.goal[:2] - next_waypoint_pos)
+                    if np.linalg.norm(blended) > 0:
+                        blended = blended / np.linalg.norm(blended) * self.max_velocity_step
+                    next_waypoint_pos = current_state[:2] + blended
+                    avoidance_iter += 1
+                else:
+                    break
+            direction_to_goal = self.goal[:2] - next_waypoint_pos
+            if np.linalg.norm(direction_to_goal) > 0:
+                direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
+            else:
+                direction_to_goal = np.array([0.0, 0.0])
+            current_state[:2] = next_waypoint_pos
+            current_state[2] = cas.atan2(direction_to_goal[1], direction_to_goal[0])
+            curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
+            if curr_distance >= self.distance_to_goal_from_start and i > 0:
+                waypoints.append(self.goal.tolist())
+            else:
+                waypoints.append(current_state.tolist())
+        if len(previous_waypoints) > 0 and previous_waypoints[0].tolist() == waypoints[0]:
+            waypoints.pop(0)
+            if self.pred_horizn > 0:
+                last_waypoint = waypoints[self.pred_horizn - 2] if self.pred_horizn > 1 else self.goal.tolist()
+                waypoints.append(last_waypoint)
+            else:
+                waypoints.append(self.goal.tolist())
+        return np.array(waypoints)
+
 
 class nmpc_node:
 
