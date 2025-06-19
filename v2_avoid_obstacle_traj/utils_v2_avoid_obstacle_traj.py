@@ -16,8 +16,8 @@ class ref_generator_2d:
         self.pred_horizn = pred_horizn
         self.distance_to_goal_from_start = np.linalg.norm(self.goal[:2] - self.start[:2])
 
-    def generate_waypoints_avoid_obstacles(self, previous_waypoints, current_state, obstacle_center, obstacle_radius):
-        current_state = np.array(previous_waypoints[0]) # Use previous_waypoints[0] as the starting point for generation
+    def generate_waypoints_avoid_obstacles(self, previous_waypoints, current_state, obstacle_centers, min_dist_from_center):
+        current_state = np.array(previous_waypoints[0]) # Use first waypoint from previous reference trajectory as the starting point for generation
         waypoints = []
 
         direction_to_goal = self.goal[:2] - current_state[:2]
@@ -25,7 +25,8 @@ class ref_generator_2d:
 
         # Collision avoidance parameters
         avoidance_strength = 3.5 # How strongly to push away from the obstacle
-        collision_threshold = obstacle_radius + self.max_velocity_step * 0.5 # Add a buffer
+        print("debug")
+        collision_threshold = min_dist_from_center + self.max_velocity_step * 0.5 # Add a buffer
 
         if distance_to_goal <= self.max_velocity_step:
             goal_list = self.goal.tolist()
@@ -36,42 +37,45 @@ class ref_generator_2d:
             # Calculate the nominal step towards the goal
             nominal_step = self.max_velocity_step * direction_to_goal / distance_to_goal
             next_waypoint_pos = current_state[:2] + nominal_step
-
+            # dist_to_obstacles = np.empty(len(obstacle_centers))
             # Check for collision with obstacle
-            dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obstacle_center)
+            for j in range(len(obstacle_centers)):
+                dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obstacle_centers[j])
 
-            if dist_to_obstacle < collision_threshold:
-                # Collision detected, adjust the step
-                # Vector from obstacle center to potential waypoint
-                vec_obstacle_to_waypoint = next_waypoint_pos - obstacle_center
+                if dist_to_obstacle < collision_threshold:
+                    # Collision detected, adjust the step
+                    # Vector from obstacle center to potential waypoint
+                    vec_obstacle_to_waypoint = next_waypoint_pos - obstacle_centers[j]
 
-                # If the waypoint is exactly at the obstacle center, choose an arbitrary avoidance direction
-                if np.linalg.norm(vec_obstacle_to_waypoint) < 1e-6:
-                    avoidance_direction = np.array([1.0, 0.0]) # Arbitrary
+                    # If the waypoint is exactly at the obstacle center, choose an avoidance direction perpendicular to line from center of obstacle to previous waypoint
+                    if np.linalg.norm(vec_obstacle_to_waypoint) < 1e-6:
+                        vec_obstacle_to_prev_waypoint = current_state[:2] - obstacle_centers[j]
+                        perpendicular_vec = np.array(-vec_obstacle_to_prev_waypoint[1], vec_obstacle_to_prev_waypoint[0])
+                        avoidance_direction = perpendicular_vec / np.linalg.norm(perpendicular_vec)
+                    else:
+                        avoidance_direction = vec_obstacle_to_waypoint / np.linalg.norm(vec_obstacle_to_waypoint)
+
+                    # Push the waypoint away from the obstacle
+                    # The strength of avoidance can depend on how deep into the obstacle it is
+                    overlap = collision_threshold - dist_to_obstacle
+                    avoidance_shift = avoidance_direction * overlap * avoidance_strength
+
+                    # Apply the avoidance shift
+                    next_waypoint_pos += avoidance_shift
+                    # Recalculate direction to goal based on the adjusted next_waypoint_pos
+                    # This might be too aggressive, alternative is to adjust nominal_step directly
+                    direction_to_goal = self.goal[:2] - next_waypoint_pos
+                    if np.linalg.norm(direction_to_goal) > 0:
+                        direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
+                    else:
+                        direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
                 else:
-                    avoidance_direction = vec_obstacle_to_waypoint / np.linalg.norm(vec_obstacle_to_waypoint)
-
-                # Push the waypoint away from the obstacle
-                # The strength of avoidance can depend on how deep into the obstacle it is
-                overlap = collision_threshold - dist_to_obstacle
-                avoidance_shift = avoidance_direction * overlap * avoidance_strength
-
-                # Apply the avoidance shift
-                next_waypoint_pos += avoidance_shift
-                # Recalculate direction to goal based on the adjusted next_waypoint_pos
-                # This might be too aggressive, alternative is to adjust nominal_step directly
-                direction_to_goal = self.goal[:2] - next_waypoint_pos
-                if np.linalg.norm(direction_to_goal) > 0:
-                    direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
-                else:
-                    direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
-            else:
-                # No collision, continue towards goal
-                direction_to_goal = self.goal[:2] - next_waypoint_pos
-                if np.linalg.norm(direction_to_goal) > 0:
-                    direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
-                else:
-                    direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
+                    # No collision, continue towards goal
+                    direction_to_goal = self.goal[:2] - next_waypoint_pos
+                    if np.linalg.norm(direction_to_goal) > 0:
+                        direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
+                    else:
+                        direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
 
             # Update current_state for the next iteration based on the adjusted position
             current_state[:2] = next_waypoint_pos
@@ -79,7 +83,7 @@ class ref_generator_2d:
 
             curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
 
-            if curr_distance >= self.distance_to_goal_from_start and i > 0: # Ensure at least one step is taken
+            if curr_distance >= self.distance_to_goal_from_start:
                 waypoints.append(self.goal.tolist())
             else:
                 waypoints.append(current_state.tolist())

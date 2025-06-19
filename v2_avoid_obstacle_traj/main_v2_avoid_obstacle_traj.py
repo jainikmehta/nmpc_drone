@@ -67,7 +67,7 @@ previous_waypoints = [current_state_0]*pred_horizn
 # # NMPC loop
 while goal_reached == False:
     ref_waypoints_0 = ref_generator_0.generate_waypoints_avoid_obstacles(previous_waypoints=np.array(previous_waypoints), current_state=current_state_0,
-                                                                         obstacle_center=obstacle_centers[0], obstacle_radius=obstacle_radius)
+                                                                         obstacle_centers=obstacle_centers, min_dist_from_center=min_dist_from_center)
     previous_waypoints = ref_waypoints_0
     print("Generated Waypoints:")
     print(ref_waypoints_0)
