@@ -3,30 +3,31 @@ import casadi as cas
 from dynamics_v2_avoid_obstacle_traj import unicycle_dynamics
 import matplotlib.pyplot as plt
 import time
-
+import math as m
 
 class ref_generator_2d:
     
     
-    def __init__(self, start, goal, max_velocity_step, pred_horizn):
+    def __init__(self, start, goal, max_velocity_step, pred_horizn, obstacle_radius):
 
         self.start = np.array(start)
         self.goal = np.array(goal)  # Convert goal to a NumPy array
         self.max_velocity_step = max_velocity_step
         self.pred_horizn = pred_horizn
         self.distance_to_goal_from_start = np.linalg.norm(self.goal[:2] - self.start[:2])
+        # Collision avoidance parameters
+        self.avoidance_strength = 2.5 # How strongly to push away from the obstacle
+        self.collision_threshold = obstacle_radius + self.max_velocity_step * 0.5 # Add a buffer
 
-    def generate_waypoints_avoid_obstacles(self, previous_waypoints, current_state, obstacle_center, obstacle_radius):
+
+    def generate_waypoints(self, previous_waypoints, current_state, obstacle_centers):
         current_state = np.array(previous_waypoints[0]) # Use previous_waypoints[0] as the starting point for generation
         waypoints = []
 
         direction_to_goal = self.goal[:2] - current_state[:2]
         distance_to_goal = np.linalg.norm(direction_to_goal)
-
-        # Collision avoidance parameters
-        avoidance_strength = 3.5 # How strongly to push away from the obstacle
-        collision_threshold = obstacle_radius + self.max_velocity_step * 0.5 # Add a buffer
-
+        unit_direction_to_goal = direction_to_goal / distance_to_goal
+        
         if distance_to_goal <= self.max_velocity_step:
             goal_list = self.goal.tolist()
             waypoints = [goal_list for _ in range(self.pred_horizn)]
@@ -34,127 +35,65 @@ class ref_generator_2d:
 
         for i in range(self.pred_horizn):
             # Calculate the nominal step towards the goal
-            nominal_step = self.max_velocity_step * direction_to_goal / distance_to_goal
+            nominal_step = self.max_velocity_step * unit_direction_to_goal
             next_waypoint_pos = current_state[:2] + nominal_step
 
             # Check for collision with obstacle
-            dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obstacle_center)
+            for j in range(len(obstacle_centers)):
+                dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obstacle_centers[j])
 
-            if dist_to_obstacle < collision_threshold:
-                # Collision detected, adjust the step
-                # Vector from obstacle center to potential waypoint
-                vec_obstacle_to_waypoint = next_waypoint_pos - obstacle_center
+                if dist_to_obstacle < self.collision_threshold:
+                    # Collision detected, adjust the step
+                    # Vector from obstacle center to potential waypoint
+                    vec_obstacle_center_to_waypoint = next_waypoint_pos - obstacle_centers[j]
 
-                # If the waypoint is exactly at the obstacle center, choose an arbitrary avoidance direction
-                if np.linalg.norm(vec_obstacle_to_waypoint) < 1e-6:
-                    avoidance_direction = np.array([1.0, 0.0]) # Arbitrary
-                else:
-                    avoidance_direction = vec_obstacle_to_waypoint / np.linalg.norm(vec_obstacle_to_waypoint)
+                    # If the waypoint is exactly at the obstacle center, choose an arbitrary avoidance direction
+                    if np.linalg.norm(vec_obstacle_center_to_waypoint) <= 1e-6:
+                        vec_obstacle_center_to_prev_waypoint = current_state[:2] - obstacle_centers[j]
+                        vec_perpendicular = np.array([-vec_obstacle_center_to_prev_waypoint[1], vec_obstacle_center_to_prev_waypoint[0]])
+                        avoidance_direction = vec_perpendicular / np.linalg.norm(vec_perpendicular)
+                    else:
+                        vec_obstacle_center_to_prev_waypoint = next_waypoint_pos - obstacle_centers[j]
+                        vec_perpendicular = np.array([-vec_obstacle_center_to_prev_waypoint[1], vec_obstacle_center_to_prev_waypoint[0]])
+                        avoidance_direction = vec_perpendicular / np.linalg.norm(vec_perpendicular)
+                        # avoidance_direction = vec_obstacle_center_to_waypoint / np.linalg.norm(vec_obstacle_center_to_waypoint)
 
-                # Push the waypoint away from the obstacle
-                # The strength of avoidance can depend on how deep into the obstacle it is
-                overlap = collision_threshold - dist_to_obstacle
-                avoidance_shift = avoidance_direction * overlap * avoidance_strength
+                    # Push the waypoint away from the obstacle
+                    # The strength of avoidance can depend on how deep into the obstacle it is
+                    overlap = self.collision_threshold - dist_to_obstacle
+                    avoidance_shift = avoidance_direction * overlap * self.avoidance_strength
 
-                # Apply the avoidance shift
-                next_waypoint_pos += avoidance_shift
-                # Recalculate direction to goal based on the adjusted next_waypoint_pos
-                # This might be too aggressive, alternative is to adjust nominal_step directly
-                direction_to_goal = self.goal[:2] - next_waypoint_pos
-                if np.linalg.norm(direction_to_goal) > 0:
-                    direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
-                else:
-                    direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
+                    # Apply the avoidance shift
+                    next_waypoint_pos += avoidance_shift
+                    # Recalculate direction to goal based on the adjusted next_waypoint_pos
+                    # This might be too aggressive, alternative is to adjust nominal_step directly
+                    
+            direction_to_goal = self.goal[:2] - next_waypoint_pos
+            distance_to_goal = np.linalg.norm(direction_to_goal)
+            if distance_to_goal >= 1e-6:  # Avoid division by zero
+                unit_direction_to_goal = direction_to_goal / distance_to_goal
             else:
-                # No collision, continue towards goal
-                direction_to_goal = self.goal[:2] - next_waypoint_pos
-                if np.linalg.norm(direction_to_goal) > 0:
-                    direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
-                else:
-                    direction_to_goal = np.array([0.0, 0.0]) # At the goal, no direction needed
+                unit_direction_to_goal = np.array([m.sin(self.goal[2]), m.cos(self.goal[2])]) # At the goal, no direction needed
+
 
             # Update current_state for the next iteration based on the adjusted position
             current_state[:2] = next_waypoint_pos
-            current_state[2] = cas.atan2(direction_to_goal[1], direction_to_goal[0])
+            current_state[2] = cas.atan2(unit_direction_to_goal[1], unit_direction_to_goal[0])
 
-            curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
-
-            if curr_distance >= self.distance_to_goal_from_start and i > 0: # Ensure at least one step is taken
+            if current_state[0] > self.goal[0] and current_state[1] > self.goal[1]:
                 waypoints.append(self.goal.tolist())
             else:
                 waypoints.append(current_state.tolist())
 
-        # Your original logic for handling identical first waypoints
-        if len(previous_waypoints) > 0 and previous_waypoints[0].tolist() == waypoints[0]:
-            waypoints.pop(0)
-            if self.pred_horizn > 0: # Ensure there's at least one element to append
-                last_waypoint = waypoints[self.pred_horizn - 2] if self.pred_horizn > 1 else self.goal.tolist()
-                waypoints.append(last_waypoint)
-            else: # If pred_horizn is 0 or 1, handle carefully
-                waypoints.append(self.goal.tolist()) # Or some default behavior
+        # # Your original logic for handling identical first waypoints
+        # if len(previous_waypoints) > 0 and previous_waypoints[0].tolist() == waypoints[0]:
+        #     waypoints.pop(0)
+        #     if self.pred_horizn > 0: # Ensure there's at least one element to append
+        #         last_waypoint = waypoints[self.pred_horizn - 2] if self.pred_horizn > 1 else self.goal.tolist()
+        #         waypoints.append(last_waypoint)
+        #     else: # If pred_horizn is 0 or 1, handle carefully
+        #         waypoints.append(self.goal.tolist()) # Or some default behavior
 
-        return np.array(waypoints)
-
-    def generate_waypoints_avoid_obstacles_multi(self, previous_waypoints, current_state, obstacle_centers, obstacle_radius):
-        current_state = np.array(previous_waypoints[0])
-        waypoints = []
-        direction_to_goal = self.goal[:2] - current_state[:2]
-        distance_to_goal = np.linalg.norm(direction_to_goal)
-        avoidance_strength = 3.5
-        collision_threshold = obstacle_radius + self.max_velocity_step * 0.5
-        max_avoidance_iters = 5  # Prevent infinite loops
-
-        if distance_to_goal <= self.max_velocity_step:
-            goal_list = self.goal.tolist()
-            waypoints = [goal_list for _ in range(self.pred_horizn)]
-            return np.array(waypoints)
-
-        for i in range(self.pred_horizn):
-            nominal_step = self.max_velocity_step * direction_to_goal / distance_to_goal
-            next_waypoint_pos = current_state[:2] + nominal_step
-            avoidance_iter = 0
-            while avoidance_iter < max_avoidance_iters:
-                collision = False
-                avoidance_vector = np.zeros(2)
-                for obs_center in obstacle_centers:
-                    dist_to_obstacle = np.linalg.norm(next_waypoint_pos - obs_center)
-                    if dist_to_obstacle < collision_threshold:
-                        collision = True
-                        vec_obstacle_to_waypoint = next_waypoint_pos - obs_center
-                        if np.linalg.norm(vec_obstacle_to_waypoint) < 1e-6:
-                            avoidance_direction = np.array([1.0, 0.0])
-                        else:
-                            avoidance_direction = vec_obstacle_to_waypoint / np.linalg.norm(vec_obstacle_to_waypoint)
-                        overlap = collision_threshold - dist_to_obstacle
-                        avoidance_vector += avoidance_direction * overlap * avoidance_strength
-                if collision:
-                    # Blend avoidance with goal direction for smoothness
-                    blended = 0.7 * avoidance_vector + 0.3 * (self.goal[:2] - next_waypoint_pos)
-                    if np.linalg.norm(blended) > 0:
-                        blended = blended / np.linalg.norm(blended) * self.max_velocity_step
-                    next_waypoint_pos = current_state[:2] + blended
-                    avoidance_iter += 1
-                else:
-                    break
-            direction_to_goal = self.goal[:2] - next_waypoint_pos
-            if np.linalg.norm(direction_to_goal) > 0:
-                direction_to_goal = direction_to_goal / np.linalg.norm(direction_to_goal)
-            else:
-                direction_to_goal = np.array([0.0, 0.0])
-            current_state[:2] = next_waypoint_pos
-            current_state[2] = cas.atan2(direction_to_goal[1], direction_to_goal[0])
-            curr_distance = np.linalg.norm(current_state[:2] - self.start[:2])
-            if curr_distance >= self.distance_to_goal_from_start and i > 0:
-                waypoints.append(self.goal.tolist())
-            else:
-                waypoints.append(current_state.tolist())
-        if len(previous_waypoints) > 0 and previous_waypoints[0].tolist() == waypoints[0]:
-            waypoints.pop(0)
-            if self.pred_horizn > 0:
-                last_waypoint = waypoints[self.pred_horizn - 2] if self.pred_horizn > 1 else self.goal.tolist()
-                waypoints.append(last_waypoint)
-            else:
-                waypoints.append(self.goal.tolist())
         return np.array(waypoints)
 
 
@@ -165,7 +104,7 @@ class nmpc_node:
                  pred_horizn, ctrl_horizn, start,
                  max_velocity, min_velocity, max_angular_velocity, 
                  sampling_time, Q_running, R_running, Q_terminal,
-                 num_obstacles, obstacle_centers, safe_distance, min_dist_from_center):
+                 num_obstacles, obstacle_centers, buffer_distance_from_obstacle_boundary, min_safe_dist_from_obstacle_center):
 
         self.num_states = num_states              # Number of states
         self.num_ctrls = num_controls                  # Control inputs
@@ -180,8 +119,8 @@ class nmpc_node:
         # Obstacle parameters
         self.num_obstacles = num_obstacles
         self.obstacle_centers = obstacle_centers
-        self.safe_distance = safe_distance
-        self.min_dist_from_center = min_dist_from_center
+        self.buffer_distance_from_obstacle_boundary = buffer_distance_from_obstacle_boundary
+        self.min_safe_dist_from_obstacle_center = min_safe_dist_from_obstacle_center
         # Constants defined
         self.Q_running = Q_running      # Weights for tracking reference state [x, y, θ]
         self.R_running = R_running      # Weights for control effort [v, ω] - Keep this!
@@ -260,7 +199,7 @@ class nmpc_node:
             pos_k = self.pred_states[0:2, k] # Predicted position [x_{k+1}, y_{k+1}] at the END of step k
             for obs_idx in range(self.num_obstacles): # For each obstacle
                 obs_center = self.obstacle_centers[obs_idx, :]
-                min_dist_sq = self.min_dist_from_center**2
+                min_dist_sq = self.min_safe_dist_from_obstacle_center**2
                 dist_sq = cas.sumsqr(pos_k - obs_center) # Squared distance from obstacle center
                 h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
                 self.constraints.append(h_k_obs)
@@ -328,18 +267,18 @@ class nmpc_node:
         
         # Define cost objective
         self.cost_objective()
-        print(self.horizn_cost)
+        # print(self.horizn_cost)
         
         # Define constraints
         self.get_constraints()
-        print(self.constraints)
+        # print(self.constraints)
         
         # Solve NMPC problem
         self.opt_controls, self.opt_states = self.solver()
-        print("optimal control:")
-        print(self.opt_controls)
-        print("optimal states:")
-        print(self.opt_states)
+        # print("optimal control:")
+        # print(self.opt_controls)
+        # print("optimal states:")
+        # print(self.opt_states)
         
         
         # --- Calculate CBF (h) values along the optimal trajectory ---
@@ -351,7 +290,7 @@ class nmpc_node:
                 obs_center = self.obstacle_centers[obs_idx, :]
                 
                 # Calculate h = ||pos_opt - obs_center||^2 - min_dist_sq
-                min_dist_sq = self.min_dist_from_center**2 # Obstacle_radius + safe_distance
+                min_dist_sq = self.min_safe_dist_from_obstacle_center**2 # Obstacle_radius + safe_distance
                 dist_sq = cas.sumsqr(pos_k_opt - obs_center) # Squared distance from obstacle center
                 h_k_obs = dist_sq - min_dist_sq          # Barrier function value for this obstacle
                 h_values[obs_idx, k] = h_k_obs
