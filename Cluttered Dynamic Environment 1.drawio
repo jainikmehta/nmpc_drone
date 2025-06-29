@@ -7,6 +7,18 @@
         <mxCell id="SPA56wAMmxe-K7njHeTv-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#000000,#000000);strokeWidth=3;" vertex="1" parent="1">
           <mxGeometry x="40" y="40" width="760" height="1000" as="geometry" />
         </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-2" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=light-dark(#FFFFFF,transparent);strokeColor=light-dark(#000000,#FF0000);strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="70" y="780" width="230" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-3" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=light-dark(#000000,#0000FF);" vertex="1" parent="1">
+          <mxGeometry x="167.5" y="877.5" width="35" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-4" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.565;entryY=0.207;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=light-dark(#000000,#0000FF);strokeWidth=3;" edge="1" parent="1" source="SPA56wAMmxe-K7njHeTv-3" target="SPA56wAMmxe-K7njHeTv-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="190" y="877.5" as="sourcePoint" />
+            <mxPoint x="240" y="827.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
