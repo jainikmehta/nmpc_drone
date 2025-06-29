@@ -1,9 +1,9 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="27.1.6">
   <diagram name="Page-1" id="GJas5A8zbiKn9Wo5F9Zt">
-    <mxGraphModel dx="1994" dy="1067" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="0" shadow="0">
+    <mxGraphModel dx="969" dy="518" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="0" shadow="0">
       <root>
         <mxCell id="0" />
-        <mxCell id="1" parent="0" />
+        <mxCell id="1" style="" parent="0" />
         <mxCell id="SPA56wAMmxe-K7njHeTv-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=light-dark(#000000,#000000);strokeWidth=3;movable=0;resizable=0;rotatable=0;deletable=0;editable=0;locked=1;connectable=0;" vertex="1" parent="1">
           <mxGeometry x="40" y="40" width="760" height="1000" as="geometry" />
         </mxCell>
@@ -61,6 +61,22 @@
         <mxCell id="SPA56wAMmxe-K7njHeTv-21" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rotation=45;" vertex="1" parent="SPA56wAMmxe-K7njHeTv-18">
           <mxGeometry x="47" y="47" width="16.25" height="16.25" as="geometry" />
         </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-22" value="" style="group;rotation=-34;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="150.00174593052023" y="767.5017459305202" width="110" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-28" value="" style="group" vertex="1" connectable="0" parent="SPA56wAMmxe-K7njHeTv-22">
+          <mxGeometry x="8.704639028383376" y="26.531532410069318" width="88.6907219432332" height="77.8969351798614" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-23" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;opacity=30;rotation=-34;" vertex="1" parent="SPA56wAMmxe-K7njHeTv-28">
+          <mxGeometry x="25.035360971616626" y="19.638467589930684" width="38.62" height="38.62" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-25" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rotation=-34;" vertex="1" parent="SPA56wAMmxe-K7njHeTv-28">
+          <mxGeometry x="36.215360971616626" y="30.818467589930684" width="16.25" height="16.25" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-24" value="" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;rotation=-214;fillColor=none;fontColor=#000000;strokeColor=#C73500;strokeWidth=4;" vertex="1" parent="SPA56wAMmxe-K7njHeTv-28">
+          <mxGeometry x="4.345360971616607" y="18.9484675899307" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
       </root>
     </mxGraphModel>
   </diagram>
