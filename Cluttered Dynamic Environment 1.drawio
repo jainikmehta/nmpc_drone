@@ -97,6 +97,15 @@
             <mxPoint x="290" y="961" as="targetPoint" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-37" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=light-dark(#000000,#000000);exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.339;entryY=0.271;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="SPA56wAMmxe-K7njHeTv-38" target="SPA56wAMmxe-K7njHeTv-31">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="820" as="sourcePoint" />
+            <mxPoint x="330" y="853" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SPA56wAMmxe-K7njHeTv-38" value="Prediction" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#E3C800,#FFFF00);fontColor=light-dark(#000000,#000000);strokeColor=#B09500;" vertex="1" parent="1">
+          <mxGeometry x="132.5" y="680" width="70" height="50.5" as="geometry" />
+        </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
       </root>
     </mxGraphModel>
