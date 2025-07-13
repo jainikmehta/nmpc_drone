@@ -9,8 +9,8 @@ from matplotlib.patches import Circle # Import Circle patch
 def plot_states_controls(
     pred_horizn, ctrl_horizn, opt_states_0, opt_control_0, 
     start, goal, ref_waypoints, sampling_time, v_max, omega_max,
-    num_obstacles, obstacle_centers, obstacle_centers_prediction,  # <-- added
-    obstacle_radius, buffer_distance_from_obstacle_boundary, min_dist_from_obstacle_center,
+    num_obstacles, obs_state, obs_centers_pred,  # <-- added
+    obs_radius, buffer_dist, min_safe_dist,
     min_h_values,
     save_path=None, step=None
 ):
@@ -30,28 +30,28 @@ def plot_states_controls(
 
     # Draw obstacles and safety boundaries (current positions)
     for i in range(num_obstacles):
-        obs_center_plot = obstacle_centers[i][:2]  # Only x, y
-        obstacle_patch = Circle(obs_center_plot, obstacle_radius, color='black', alpha=0.6, zorder=5)
+        obs_center_plot = obs_state[i][:2]  # Only x, y
+        obstacle_patch = Circle(obs_center_plot, obs_radius, color='black', alpha=0.6, zorder=5)
         ax1.add_patch(obstacle_patch)
-        safety_circle = Circle(obs_center_plot, min_dist_from_obstacle_center, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=4)
+        safety_circle = Circle(obs_center_plot, min_safe_dist, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=4)
         ax1.add_patch(safety_circle)
 
     # Plot predicted obstacle trajectories as dotted lines, safety circles, and black dots
     for i in range(num_obstacles):
-        pred_traj = np.array([obstacle_centers_prediction[i, j] for j in range(pred_horizn)])
+        pred_traj = np.array([obs_centers_pred[i, j] for j in range(pred_horizn)])
         ax1.plot(pred_traj[:, 0], pred_traj[:, 1], 'k--', linewidth=1.5, alpha=0.7, label='Predicted Obstacle' if i == 0 else None)
         for j in range(1, pred_horizn):
             # Faded predicted obstacle body
-            pred_patch = Circle(pred_traj[j], obstacle_radius, color='gray', alpha=0.3, zorder=3)
+            pred_patch = Circle(pred_traj[j], obs_radius, color='gray', alpha=0.3, zorder=3)
             ax1.add_patch(pred_patch)
             # Safety circle for predicted state
-            pred_safety = Circle(pred_traj[j], min_dist_from_obstacle_center, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=2)
+            pred_safety = Circle(pred_traj[j], min_safe_dist, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=2)
             ax1.add_patch(pred_safety)
             # Black dot at predicted center
             ax1.plot(pred_traj[j, 0], pred_traj[j, 1], 'ko', markersize=6, zorder=7)
         # Also plot for the first predicted state (j=0)
         ax1.plot(pred_traj[0, 0], pred_traj[0, 1], 'ko', markersize=6, zorder=7)
-        pred_safety0 = Circle(pred_traj[0], min_dist_from_obstacle_center, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=2)
+        pred_safety0 = Circle(pred_traj[0], min_safe_dist, color='darkorange', fill=False, linestyle=':', linewidth=1.0, zorder=2)
         ax1.add_patch(pred_safety0)
 
     # Direction Arrows (Optional)
