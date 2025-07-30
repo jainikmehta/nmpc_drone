@@ -325,6 +325,11 @@
             <mxPoint x="-2" y="-23" as="offset" />
           </mxGeometry>
         </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-102" value="&lt;div&gt;\(&lt;/div&gt;&lt;div&gt;\begin{bmatrix}&lt;/div&gt;&lt;div&gt;(\mu_{i,t}, \sigma_{i,t}) \\&lt;/div&gt;&lt;div&gt;(\mu_{i,t-1}, \sigma_{i,t-1})&lt;/div&gt;&lt;div&gt;\end{bmatrix}&lt;/div&gt;&lt;div&gt;\)&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-65">
+          <mxGeometry x="-0.0741" relative="1" as="geometry">
+            <mxPoint y="40" as="offset" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-38" value="Obstacle Motion Prediction" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="290" y="1440" width="120" height="60" as="geometry" />
         </mxCell>
