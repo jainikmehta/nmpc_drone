@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="28.0.7">
   <diagram name="Page-1" id="GJas5A8zbiKn9Wo5F9Zt">
-    <mxGraphModel dx="1657" dy="451" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
+    <mxGraphModel dx="1677" dy="462" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" style="" parent="0" />
@@ -342,20 +342,6 @@
             <mxPoint y="8" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-94" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-50" target="5FRFhFm-bMS0Uy9U0a_G-2" edge="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="530" y="1550" />
-              <mxPoint x="530" y="1420" />
-              <mxPoint x="350" y="1420" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-95" value="\(rb_t\)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="uVl9msC-3Oj0vJ0fN8xo-94" vertex="1" connectable="0">
-          <mxGeometry x="0.2933" y="-1" relative="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-50" value="RL policy" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="290" y="1520" width="120" height="60" as="geometry" />
         </mxCell>
@@ -402,27 +388,40 @@
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-82" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.404;entryY=1.196;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-74" target="uVl9msC-3Oj0vJ0fN8xo-74" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-2" value="" style="shape=waypoint;sketch=0;fillStyle=solid;size=6;pointerEvents=1;points=[];fillColor=none;resizable=0;rotatable=0;perimeter=centerPerimeter;snapToPoint=1;" vertex="1" parent="1">
-          <mxGeometry x="340" y="1419.97" width="20" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.483;entryY=0.117;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="5FRFhFm-bMS0Uy9U0a_G-2" target="5FRFhFm-bMS0Uy9U0a_G-2">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-6" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-34">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="350" y="1430" as="sourcePoint" />
-            <mxPoint x="400" y="1380" as="targetPoint" />
+        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.483;entryY=0.117;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="350" y="1418.97" as="sourcePoint" />
+            <mxPoint x="350" y="1418.97" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="5FRFhFm-bMS0Uy9U0a_G-8" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.709;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-35">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="350" y="1420" as="sourcePoint" />
+            <mxPoint x="350" y="1419" as="sourcePoint" />
             <mxPoint x="150" y="1420" as="targetPoint" />
             <Array as="points">
               <mxPoint x="220" y="1420" />
               <mxPoint x="90" y="1420" />
               <mxPoint x="90" y="1380" />
             </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-11" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.596;exitY=0.567;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="5FRFhFm-bMS0Uy9U0a_G-12" target="uVl9msC-3Oj0vJ0fN8xo-50">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="355" y="1424.47" as="sourcePoint" />
+            <mxPoint x="515" y="1404.47" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="540" y="1420" />
+              <mxPoint x="540" y="1565" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-12" value="" style="shape=waypoint;sketch=0;fillStyle=solid;size=6;pointerEvents=1;points=[];fillColor=none;resizable=0;rotatable=0;perimeter=centerPerimeter;snapToPoint=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="1409" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-14" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.501;exitY=0.648;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="5FRFhFm-bMS0Uy9U0a_G-12" target="uVl9msC-3Oj0vJ0fN8xo-34">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="1410" as="sourcePoint" />
+            <mxPoint x="410" y="1360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
