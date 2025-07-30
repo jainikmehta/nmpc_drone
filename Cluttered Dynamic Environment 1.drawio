@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="28.0.7">
   <diagram name="Page-1" id="GJas5A8zbiKn9Wo5F9Zt">
-    <mxGraphModel dx="1067" dy="106" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
+    <mxGraphModel dx="1624" dy="379" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" style="" parent="0" />
@@ -277,7 +277,7 @@
             <mxPoint x="550" y="1598.94" as="targetPoint" />
             <Array as="points">
               <mxPoint x="530" y="1390" />
-              <mxPoint x="530" y="1597" />
+              <mxPoint x="530" y="1565" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -305,20 +305,19 @@
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-35" value="NMPC solver" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="120" y="1360" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-38">
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-38">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="260" y="1450" as="targetPoint" />
-            <mxPoint x="130" y="1491" as="sourcePoint" />
+            <mxPoint x="150" y="1470" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-40" value="History of&amp;nbsp;&lt;div&gt;Obstacle&amp;nbsp;&lt;/div&gt;&lt;div&gt;Trajectories&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-39">
-          <mxGeometry x="-0.0872" y="-2" relative="1" as="geometry">
-            <mxPoint x="-16" y="-52" as="offset" />
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-67" value="History of&amp;nbsp;&lt;div&gt;Obstacle&amp;nbsp;&lt;/div&gt;&lt;div&gt;Trajectories&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-65">
+          <mxGeometry x="-0.048" y="-1" relative="1" as="geometry">
+            <mxPoint x="-2" y="-23" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-60" value="\((\mu_{i,t}, \sigma_{i,t})\)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-39">
-          <mxGeometry x="-0.1171" relative="1" as="geometry">
-            <mxPoint x="11" y="9" as="offset" />
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-68" value="\((\mu_{i,t}, \sigma_{i,t})\)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-65">
+          <mxGeometry x="0.2105" y="-3" relative="1" as="geometry">
+            <mxPoint x="-20" y="6" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-38" value="Obstacle Motion Prediction" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
@@ -329,8 +328,8 @@
             <mxPoint x="370" y="1581.11" as="targetPoint" />
             <mxPoint x="430" y="1501" as="sourcePoint" />
             <Array as="points">
-              <mxPoint x="480" y="1500" />
-              <mxPoint x="480" y="1582" />
+              <mxPoint x="480" y="1470" />
+              <mxPoint x="480" y="1550" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -345,7 +344,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-50" value="RL policy" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="290" y="1551.47" width="120" height="60" as="geometry" />
+          <mxGeometry x="290" y="1520" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
       </root>
