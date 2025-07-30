@@ -354,9 +354,25 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-70" value="\(diag(c_1, c_2, c_3, \ldots, c_{t_n}&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;)\)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-69">
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-70" value="\(diag(c_1, c_2, c_3, \ldots, c_{t_n})\)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-69">
           <mxGeometry x="-0.5804" y="1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-71" value="Multiplication&lt;div&gt;Factor for Obstacle&lt;br&gt;&lt;div&gt;Variances&lt;/div&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-69">
+          <mxGeometry x="0.4136" y="1" relative="1" as="geometry">
             <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-73" value="" style="endArrow=classic;html=1;rounded=0;entryX=-0.014;entryY=0.159;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-35">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="450" y="1550" as="sourcePoint" />
+            <mxPoint x="30" y="1380" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="450" y="1600" />
+              <mxPoint x="20" y="1600" />
+              <mxPoint x="20" y="1370" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
