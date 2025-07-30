@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="28.0.7">
   <diagram name="Page-1" id="GJas5A8zbiKn9Wo5F9Zt">
-    <mxGraphModel dx="3614" dy="1353" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="0" shadow="0">
+    <mxGraphModel dx="2184" dy="653" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" style="" parent="0" />
@@ -270,6 +270,53 @@
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-33" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=none;fillColor=light-dark(#FFFFFF,#00FFFF);" vertex="1" parent="1">
           <mxGeometry x="-554.25" y="1413.47" width="11" height="11" as="geometry" />
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-34" value="Plant" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="1360" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-35" target="uVl9msC-3Oj0vJ0fN8xo-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-37" value="u" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-36">
+          <mxGeometry x="-0.4618" relative="1" as="geometry">
+            <mxPoint x="9" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-35" value="NMPC solver" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="1360" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-38">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="180" y="1501" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-40" value="History of Obstacle Trajectories" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-39">
+          <mxGeometry x="-0.0872" y="-2" relative="1" as="geometry">
+            <mxPoint x="-34" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-38" value="Obstacle Motion Prediction" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="1471.47" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-38">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="1600" as="targetPoint" />
+            <mxPoint x="430" y="1501.13" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="460" y="1500" />
+              <mxPoint x="460" y="1600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-44" value="Future&amp;nbsp;&lt;div&gt;Obstacle&amp;nbsp;&lt;/div&gt;&lt;div&gt;States&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-41">
+          <mxGeometry x="-0.6761" y="2" relative="1" as="geometry">
+            <mxPoint x="-7" y="-23" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-45" value="$\mu&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;$&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="uVl9msC-3Oj0vJ0fN8xo-41">
+          <mxGeometry x="0.0038" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
       </root>
