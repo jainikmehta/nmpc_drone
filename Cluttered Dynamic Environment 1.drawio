@@ -291,7 +291,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-34" value="Plant" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="290" y="1347.47" width="120" height="60" as="geometry" />
+          <mxGeometry x="290" y="1337.47" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-35" target="uVl9msC-3Oj0vJ0fN8xo-34" edge="1">
           <mxGeometry relative="1" as="geometry" />
@@ -302,7 +302,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-35" value="NMPC solver&lt;div&gt;with defined Cost&amp;nbsp;&lt;/div&gt;&lt;div&gt;and CBF Constraints&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="110" y="1347.47" width="120" height="60" as="geometry" />
+          <mxGeometry x="110" y="1337.47" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="uVl9msC-3Oj0vJ0fN8xo-65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-38" edge="1">
           <mxGeometry relative="1" as="geometry">
@@ -346,7 +346,8 @@
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="530" y="1550" />
-              <mxPoint x="530" y="1430" />
+              <mxPoint x="530" y="1420" />
+              <mxPoint x="350" y="1420" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -362,7 +363,7 @@
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="80" y="1570" />
-              <mxPoint x="80" y="1380" />
+              <mxPoint x="80" y="1370" />
             </Array>
             <mxPoint x="120" y="1414" as="targetPoint" />
           </mxGeometry>
@@ -377,14 +378,14 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-73" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.815;exitY=0.846;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-74" edge="1">
+        <mxCell id="uVl9msC-3Oj0vJ0fN8xo-73" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.815;exitY=0.846;exitDx=0;exitDy=0;exitPerimeter=0;entryX=-0.007;entryY=0.374;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="uVl9msC-3Oj0vJ0fN8xo-74" target="uVl9msC-3Oj0vJ0fN8xo-35" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="440" y="1550" as="sourcePoint" />
             <mxPoint x="109" y="1370" as="targetPoint" />
             <Array as="points">
               <mxPoint x="435" y="1600" />
               <mxPoint x="40" y="1600.2" />
-              <mxPoint x="40" y="1370" />
+              <mxPoint x="40" y="1360" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -411,6 +412,17 @@
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="350" y="1430" as="sourcePoint" />
             <mxPoint x="400" y="1380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5FRFhFm-bMS0Uy9U0a_G-8" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.709;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="uVl9msC-3Oj0vJ0fN8xo-35">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="1420" as="sourcePoint" />
+            <mxPoint x="150" y="1420" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="220" y="1420" />
+              <mxPoint x="90" y="1420" />
+              <mxPoint x="90" y="1380" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="SPA56wAMmxe-K7njHeTv-27" value="Obstacles" parent="0" />
