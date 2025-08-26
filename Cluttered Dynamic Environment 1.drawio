@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36" version="28.1.1" pages="2">
   <diagram name="Page-1" id="GJas5A8zbiKn9Wo5F9Zt">
-    <mxGraphModel dx="1321" dy="252" grid="0" gridSize="10" guides="0" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
+    <mxGraphModel dx="1528" dy="363" grid="0" gridSize="10" guides="0" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#FFFFFF,#FFFFFF)" math="1" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" style="" parent="0" />
@@ -234,8 +234,8 @@
         <mxCell id="O5Yj0BY--caXqHYr7iZM-152" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Obstacle 1&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0));&quot; size=&quot;1&quot;&gt;&lt;b style=&quot;&quot;&gt;Mean&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=light-dark(#FF8000,#FF8000);labelBackgroundColor=none;rotation=0;strokeColor=light-dark(#000000,#000000);" parent="O5Yj0BY--caXqHYr7iZM-160" vertex="1">
           <mxGeometry x="289.0031033842806" y="122.99956473553993" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="O5Yj0BY--caXqHYr7iZM-153" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Baseline Bound&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=light-dark(#FF8000,#FF8000);labelBackgroundColor=none;rotation=0;strokeColor=light-dark(#000000,#000000);" parent="O5Yj0BY--caXqHYr7iZM-160" vertex="1">
-          <mxGeometry x="224" y="11" width="60" height="30" as="geometry" />
+        <mxCell id="O5Yj0BY--caXqHYr7iZM-153" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Upper&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Baseline Bound&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=light-dark(#FF8000,#FF8000);labelBackgroundColor=none;rotation=0;strokeColor=light-dark(#000000,#000000);" parent="O5Yj0BY--caXqHYr7iZM-160" vertex="1">
+          <mxGeometry x="224" y="11" width="60" height="41" as="geometry" />
         </mxCell>
         <mxCell id="O5Yj0BY--caXqHYr7iZM-155" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Updated&lt;/b&gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); font-size: 9px;&quot;&gt;&lt;b&gt;Bound&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;fontSize=11;fontColor=light-dark(#FF8000,#FF8000);labelBackgroundColor=none;rotation=0;strokeColor=light-dark(#000000,#000000);" parent="O5Yj0BY--caXqHYr7iZM-160" vertex="1">
           <mxGeometry x="139" y="23" width="60" height="30" as="geometry" />
